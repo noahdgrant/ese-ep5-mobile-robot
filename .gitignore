@@ -1,0 +1,12 @@
+# Folders
+DebugConfig/
+Listings/
+Objects/
+RTE/
+STM32F30x_DSP_StdPeriph_Lib_V1.3.0/
+
+# File types
+*.uvguix.*
+*.uvoptx
+*.scvd
+*Zone.Identifier
