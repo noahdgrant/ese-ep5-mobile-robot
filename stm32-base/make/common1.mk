@@ -1,16 +1,22 @@
-# -.- Makefile -.-
+# Check to make sure that the required variables are set
+ifndef DEVICE
+    $(error Please set the required DEVICE variable in your makefile.)
+endif
 
-DEVICE = STM32F303xE
-FLASH  = 0x08000000
+ifndef FLASH
+    $(error Please set the required FLASH variable in your makefile.)
+endif
 
-USE_ST_CMSIS = true
+ifeq ($(FLASHING_TOOL), stm32flash)
+	ifndef FLASHING_SERIAL_PORT
+		$(error Please set the required FLASHING_SERIAL_PORT variable in your makefile)
+	endif
+endif
 
-SERIES_CPU = cortex-m4
-SERIES_ARCH = armv7e-m+fp
 
 # Standard values for (linked) STM32-base folders
-STM32_BASE_PATH   ?= ./stm32-base
-STM32_CUBE_PATH   ?= ./stm32-cube
+STM32_BASE_PATH   ?= ./STM32-base
+STM32_CUBE_PATH   ?= ./STM32-base-STM32Cube
 
 # STM32-base sub-folders
 BASE_LINKER   = $(STM32_BASE_PATH)/linker
@@ -23,8 +29,11 @@ OBJ_FOLDER ?= ./obj
 SRC_FOLDER ?= ./src
 INC_FOLDER ?= ./inc
 
-SERIES_FOLDER = STM32F3xx
+# Determine the series folder name
+include $(BASE_MAKE)/series-folder-name.mk
 
+# Include the series-specific makefile
+include $(BASE_MAKE)/$(SERIES_FOLDER)/common.mk
 MAPPED_DEVICE ?= $(DEVICE)
 
 # Default flashing tool is st-flash
@@ -39,14 +48,27 @@ TOOLCHAIN_PATH      ?= /opt/gcc-arm-none-eabi/bin/
 TOOLCHAIN_SEPARATOR ?=
 TOOLCHAIN_PREFIX    ?= arm-none-eabi-
 
-CC = $(TOOLCHAIN_PATH)$(TOOLCHAIN_SEPARATOR)$(TOOLCHAIN_PREFIX)gcc
+CC      = $(TOOLCHAIN_PATH)$(TOOLCHAIN_SEPARATOR)$(TOOLCHAIN_PREFIX)gcc
+CXX     = $(TOOLCHAIN_PATH)$(TOOLCHAIN_SEPARATOR)$(TOOLCHAIN_PREFIX)g++
+LD      = $(TOOLCHAIN_PATH)$(TOOLCHAIN_SEPARATOR)$(TOOLCHAIN_PREFIX)ld -v
+AR      = $(TOOLCHAIN_PATH)$(TOOLCHAIN_SEPARATOR)$(TOOLCHAIN_PREFIX)ar
+AS      = $(TOOLCHAIN_PATH)$(TOOLCHAIN_SEPARATOR)$(TOOLCHAIN_PREFIX)gcc
 OBJCOPY = $(TOOLCHAIN_PATH)$(TOOLCHAIN_SEPARATOR)$(TOOLCHAIN_PREFIX)objcopy
+OBJDUMP = $(TOOLCHAIN_PATH)$(TOOLCHAIN_SEPARATOR)$(TOOLCHAIN_PREFIX)objdump
+SIZE    = $(TOOLCHAIN_PATH)$(TOOLCHAIN_SEPARATOR)$(TOOLCHAIN_PREFIX)size
+
 
 # Flags - Overall Options
 CPPFLAGS += -specs=nosys.specs
 
 # Flags - C Language Options
 CFLAGS += -ffreestanding
+
+# Flags - C++ Language Options
+CXXFLAGS += -fno-threadsafe-statics
+CXXFLAGS += -fno-rtti
+CXXFLAGS += -fno-exceptions
+CXXFLAGS += -fno-unwind-tables
 
 # Flags - Warning Options
 CPPFLAGS += -Wall
@@ -69,7 +91,7 @@ endif
 
 # Flags - Linker Options
 # CPPFLAGS += -nostdlib
-CPPFLAGS += -Wl,-L$(BASE_LINKER),-T$(BASE_LINKER)/$(DEVICE).ld
+CPPFLAGS += -Wl,-L$(BASE_LINKER),-T$(BASE_LINKER)/$(SERIES_FOLDER)/$(DEVICE).ld
 
 # Flags - Directory Options
 CPPFLAGS += -I$(INC_FOLDER)
@@ -96,23 +118,23 @@ SRC ?=
 SRC += $(SRC_FOLDER)/*.c
 
 # Startup file
-DEVICE_STARTUP = $(BASE_STARTUP)/$(MAPPED_DEVICE).s
+DEVICE_STARTUP = $(BASE_STARTUP)/$(SERIES_FOLDER)/$(MAPPED_DEVICE).s
 
 # Include the CMSIS files, using the HAL implies using the CMSIS
 ifneq (,$(or USE_ST_CMSIS, USE_ST_HAL))
     CPPFLAGS += -I$(STM32_CUBE_PATH)/CMSIS/ARM/inc
-    CPPFLAGS += -I$(STM32_CUBE_PATH)/CMSIS/inc
+    CPPFLAGS += -I$(STM32_CUBE_PATH)/CMSIS/$(SERIES_FOLDER)/inc
 
-    SRC += $(STM32_CUBE_PATH)/CMSIS/src/*.c
+    SRC += $(STM32_CUBE_PATH)/CMSIS/$(SERIES_FOLDER)/src/*.c
 endif
 
 # Include the HAL files
 ifdef USE_ST_HAL
     CPPFLAGS += -D USE_HAL_DRIVER
-    CPPFLAGS += -I$(STM32_CUBE_PATH)/HAL/inc
+    CPPFLAGS += -I$(STM32_CUBE_PATH)/HAL/$(SERIES_FOLDER)/inc
 
     # A simply expanded variable is used here to perform the find command only once.
-    HAL_SRC := $(shell find $(STM32_CUBE_PATH)/HAL/src/*.c ! -name '*_template.c')
+    HAL_SRC := $(shell find $(STM32_CUBE_PATH)/HAL/$(SERIES_FOLDER)/src/*.c ! -name '*_template.c')
     SRC += $(HAL_SRC)
 endif
 
