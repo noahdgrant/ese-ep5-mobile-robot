@@ -1,12 +1,8 @@
 # Folders
-DebugConfig/
-Listings/
-Objects/
-RTE/
-STM32F30x_DSP_StdPeriph_Lib_V1.3.0/
+STM32-base
+STM32-base-STM32Cube
+bin
+obj
 
 # File types
-*.uvguix.*
-*.uvoptx
-*.scvd
 *Zone.Identifier

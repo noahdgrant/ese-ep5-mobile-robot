@@ -1,4 +1,6 @@
-# Project dev environment setup script
+#!/bin/bash
+
+# Project setup script
 
 # INSTALL PACKAGES
 # make
