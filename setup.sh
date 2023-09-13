@@ -13,5 +13,5 @@ curl -Lo gcc-arm-none-eabi.tar.xz "https://developer.arm.com/-/media/Files/downl
 sudo mkdir /opt/gcc-arm-none-eabi
 echo 'export PATH=$PATH:/opt/gcc-arm-none-eabi/bin' | sudo tee -a /etc/profile.d/gcc-arm-none-eabi.sh
 source /etc/profile
-rm -rf ~/gcc-arm-none-eabi.tar.xz
+rm -rf gcc-arm-none-eabi.tar.xz
 

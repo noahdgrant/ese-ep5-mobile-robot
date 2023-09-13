@@ -13,6 +13,6 @@ have to be teathered to a computer.
 Run the setup.sh script to download and setup all project dependencies.
 
 ## Build
-1. Run 'make' to compile to project.
-2. Run 'make clean' to compile project from scratch.
-3. Run 'make flash' to flash the STM32 device.
+- Run 'make' to compile to project.
+- Run 'make clean' to compile project from scratch.
+- Run 'make flash' to flash the STM32 device.

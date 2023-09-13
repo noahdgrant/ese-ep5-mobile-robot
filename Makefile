@@ -10,7 +10,7 @@ SERIES_ARCH = armv7e-m+fp
 
 # Standard values for (linked) STM32-base folders
 STM32_BASE_PATH   ?= ./stm32-base
-STM32_CUBE_PATH   ?= ./stm32-cube
+STM32_CUBE_PATH   ?= ./stm32-base
 
 # STM32-base sub-folders
 BASE_LINKER   = $(STM32_BASE_PATH)/linker
