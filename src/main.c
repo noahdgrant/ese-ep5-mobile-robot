@@ -28,7 +28,7 @@ int main(void){
 	System_Clock_Init();					// Scale clock speed to 72MHz
 	SystemCoreClockUpdate();
 	
-	UART2_Init();
+	UART3_Init();
 	Stepper_Init();
 	RCServo_Init();
 	LED_Init();
@@ -39,8 +39,8 @@ int main(void){
 	Encoder_Init();
 	
 	// Print menu
-	UART_printf("Embedded Systems Software Semester 4 Final Demonstration\n");
-	UART_printf("Press a key on the keypad\n");
+	UART3_printf("Embedded Systems Software Semester 4 Final Demonstration\n");
+	UART3_printf("Press a key on the keypad\n");
 
 	// PROGRAM LOOP
 	while(1){
