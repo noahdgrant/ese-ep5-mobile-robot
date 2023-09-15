@@ -11,11 +11,11 @@
 
 
 /******************************************************************
-*												PUBLIC FUNCTIONS													*
+*						PUBLIC FUNCTIONS													*
 ******************************************************************/
 
 /********************************************************
-* PushButton_Init() - Initialize push button setting.
+* PushButton_Init() - Initialize limit switch settings.
 * No inputs.
 * No return value.
 ********************************************************/
@@ -33,7 +33,7 @@ void PushButton_Init(void){
 /**********************************************************************
 * PushButton_PressCheck() - Check if the push button has been pressed.
 * No inputs.
-* No return value.
+* Returns result depending on button status.
 **********************************************************************/
 uint8_t PushButton_PressCheck(void){
 	// Check if ODR of PC13 is set
