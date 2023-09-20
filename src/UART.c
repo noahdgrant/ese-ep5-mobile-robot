@@ -6,11 +6,11 @@
 ******************************************************************************/
 
 #include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
+
 #include "UART.h"
 #include "Utility.h"
-#include "stm32f303xe.h"
-
 
 /******************************************************************
 *					LOCAL CONSTANTS AND VARIABLES				  *
@@ -18,19 +18,23 @@
 
 #define BAUD_RATE 9600
 #define UART_MAX_BUFF_SIZE 100
+#define RXBUFSIZE 256
 
+uint8_t USART3_buffer_rx[RXBUFSIZE]; // Last space need to be reserved for empty flag
+uint8_t Rx3_counter = 0;
+uint8_t Rx3_next_char = 0;
 
 /******************************************************************
 *						 PRIVATE FUNCTIONS						  *
 ******************************************************************/
 
 /****************************************************
-* UART2_config() - Configure UART2 message settings.
+* USART2_config() - Configure USART2 message settings.
 * No inputs.
 * No return value.
 ****************************************************/
-static void UART2_Config(void){
-	// 1. Disable UART2 (set UE on CR1 to 0)
+static void USART2_Config(void){
+	// 1. Disable USART2 (set UE on CR1 to 0)
 		// USART2 -> CR1, clear UE bit
 	USART2->CR1 &= ~USART_CR1_UE;
 	
@@ -55,22 +59,22 @@ static void UART2_Config(void){
 	USART2->CR1 |= USART_CR1_TE;	// Enable transmitter
 	USART2->CR1 |= USART_CR1_RE;	// Enable receiver
 	
-	// 5. Enable UART2 (set UE and CR1 to 1)
+	// 5. Enable USART2 (set UE and CR1 to 1)
 		// USART2 -> CR1, set CR1
 	USART2->CR1 |= USART_CR1_UE;
 		
-	// 6. Wait for the UART2 clock to boot up and get ready
+	// 6. Wait for the USART2 clock to boot up and get ready
 	while((USART2->ISR & USART_ISR_TEACK) == 0);	// Wait till Transmitter is ready to go
 	while((USART2->ISR & USART_ISR_REACK) == 0);	// Wait till Receiver is ready to go
 }
 
 /****************************************************
-* UART3_config() - Configure UART3 message settings.
+* USART3_config() - Configure USART3 message settings.
 * No inputs.
 * No return value.
 ****************************************************/
-static void UART3_Config(void){
-	// Disable UART3 (set UE on CR1 to 0)
+static void USART3_Config(void){
+	// Disable USART3 (set UE on CR1 to 0)
 	USART3->CR1 &= ~USART_CR1_UE;
 	
 	// Set the baud rate to 9600
@@ -87,26 +91,25 @@ static void UART3_Config(void){
 	USART3->CR1 |= USART_CR1_TE;
 	USART3->CR1 |= USART_CR1_RE;
 	
-	// Enable UART3 (set UE and CR1 to 1)
+	// Enable USART3 (set UE and CR1 to 1)
 	USART3->CR1 |= USART_CR1_UE;
 		
-	// Wait for the UART3 clock to boot up and get ready
+	// Wait for the USART3 clock to boot up and get ready
 	while((USART3->ISR & USART_ISR_TEACK) == 0);
 	while((USART3->ISR & USART_ISR_REACK) == 0);
 }
-
 
 /******************************************************************
 *                       PUBLIC FUNCTIONS  						  *
 ******************************************************************/
 
 /******************************************
-* UART2_Init() - Initialize UART2 setting.
+* USART2_Init() - Initialize USART2 setting.
 * No inputs.
 * No return value.
 ******************************************/
-void UART2_Init(void){
-	// Enable PA2 and PA3 on AF7 for UART2 Comm
+void USART2_Init(void){
+	// Enable PA2 and PA3 on AF7 for USART2 Comm
 	
 	// 1. Enable APB1, so it is now driven by the scaled clock
 	RCC->APB1ENR |= RCC_APB1ENR_USART2EN;	// RCC->APB1ENR |= (0x1UL << (1 * 17));
@@ -160,16 +163,16 @@ void UART2_Init(void){
 	GPIOA->OTYPER &= ~(1UL << (1*2)); // Set PA2 to 'push-pull'
 	GPIOA->OTYPER &= ~(1UL << (1*3));	// Set PA3 to 'push-pull'
 	
-	// Configure UART2
-	UART2_Config();
+	// Configure USART2
+	USART2_Config();
 }
 
 /**************************************************************
-* UART2_putc() - Write a char to transmit data register.
+* USART2_putc() - Write a char to transmit data register.
 * c	- Char to transmit.
 * No return value.
 **************************************************************/
-void UART2_putc(char c){
+void USART2_putc(char c){
 	// Wait TXE (TX empty) is set
 	while((USART2->ISR & USART_ISR_TXE) == 0);
 	
@@ -179,23 +182,23 @@ void UART2_putc(char c){
 }
 
 /********************************************************
-* UART2_puts() - Write string to transmit data register.
+* USART2_puts() - Write string to transmit data register.
 * str		- String to transmit.
 * No return value.
 ********************************************************/
-void UART2_puts(char *str){
+void USART2_puts(char *str){
 	// Don't send trailing NULL char
 	while(*str){
-		UART2_putc(*str++);
+		USART2_putc(*str++);
 	}
 }
 
 /*******************************************************
-* UART2_getc() - Get char from user.
+* USART2_getc() - Get char from user.
 * No inputs.
 * Returns a char.
 *******************************************************/
-char UART2_getc(void){
+char USART2_getc(void){
 	// Wait until RXNE flag is set
 	while((USART2->ISR & USART_ISR_RXNE) == 0);
 	
@@ -205,11 +208,11 @@ char UART2_getc(void){
 }
 
 /*******************************************************
-* UART2_getcNB() - Get char from user (non-blocking).
+* USART2_getcNB() - Get char from user (non-blocking).
 * No inputs.
 * Returns a char.
 *******************************************************/
-char UART2_getcNB(void){
+char USART2_getcNB(void){
 	// If RXNE flag is set
 	if(USART2->ISR & USART_ISR_RXNE){
 		// Read char from the receive data regsiter
@@ -222,11 +225,11 @@ char UART2_getcNB(void){
 }
 
 /*******************************************************
-* UART2_printf() - Formats and transmits string.
+* USART2_printf() - Formats and transmits string.
 * fmt		- String to transmit.
 * No return value.
 *******************************************************/
-void UART2_printf(char* fmt, ...){
+void USART2_printf(char* fmt, ...){
 	char buff[UART_MAX_BUFF_SIZE];
 	
 	// Instructions for function with variable argument list in W2 slides
@@ -242,15 +245,15 @@ void UART2_printf(char* fmt, ...){
 	va_end(args);
 	
 	// Transmit UART buff
-	UART2_puts(buff);
+	USART2_puts(buff);
 }
 
 /******************************************
-* UART3_Init() - Initialize UART3 setting.
+* USART3_Init() - Initialize USART3 setting.
 * No inputs.
 * No return value.
 ******************************************/
-void UART3_Init(void){
+void USART3_Init(void){
 	// Enable APB1, so it is now driven by the scaled clock
 	SET_BITS(RCC->APB1ENR, RCC_APB1ENR_USART3EN);
 	
@@ -281,15 +284,19 @@ void UART3_Init(void){
     GPIO_MODER_SET(B, 13, GPIO_MODE_AF);
     GPIO_MODER_SET(B, 14, GPIO_MODE_AF);
 	
-	UART3_Config();
+    // Enable USART3 interrupts
+    NVIC_EnableIRQ(USART3_IRQn);
+    NVIC_SetPriority(USART3_IRQn, 0);
+
+	USART3_Config();
 }
 
 /**************************************************************
-* UART3_putc() - Write a char to transmit data register.
+* USART3_putc() - Write a char to transmit data register.
 * c	- Char to transmit.
 * No return value.
 **************************************************************/
-void UART3_putc(char c){
+void USART3_putc(char c){
 	while((USART3->ISR & USART_ISR_TXE) == 0);
 	
 	// Write char to the trasmit data register
@@ -298,23 +305,23 @@ void UART3_putc(char c){
 }
 
 /********************************************************
-* UART3_puts() - Write string to transmit data register.
+* USART3_puts() - Write string to transmit data register.
 * str		- String to transmit.
 * No return value.
 ********************************************************/
-void UART3_puts(char *str){
+void USART3_puts(char *str){
 	// Don't send trailing NULL char
 	while(*str){
-		UART3_putc(*str++);
+		USART3_putc(*str++);
 	}
 }
 
 /*******************************************************
-* UART3_getc() - Get char from user.
+* USART3_getc() - Get char from user.
 * No inputs.
 * Returns a char.
 *******************************************************/
-char UART3_getc(void){
+char USART3_getc(void){
 	while((USART3->ISR & USART_ISR_RXNE) == 0);
 	
 	// Read char from the receive data regsiter
@@ -323,11 +330,11 @@ char UART3_getc(void){
 }
 
 /*******************************************************
-* UART3_getcNB() - Get char from user (non-blocking).
+* USART3_getcNB() - Get char from user (non-blocking).
 * No inputs.
 * Returns a char.
 *******************************************************/
-char UART3_getcNB(void){
+char USART3_getcNB(void){
 	if(USART3->ISR & USART_ISR_RXNE){
 		// Read char from the receive data regsiter
 		// Reading USART_RDR automatically clears the RXNE flag
@@ -339,11 +346,11 @@ char UART3_getcNB(void){
 }
 
 /*******************************************************
-* UART3_printf() - Formats and transmits string.
+* USART3_printf() - Formats and transmits string.
 * fmt		- String to transmit.
 * No return value.
 *******************************************************/
-void UART3_printf(char* fmt, ...){
+void USART3_printf(char* fmt, ...){
 	char buff[UART_MAX_BUFF_SIZE];
 	
 	va_list args;
@@ -351,5 +358,28 @@ void UART3_printf(char* fmt, ...){
 	vsnprintf(buff, UART_MAX_BUFF_SIZE, fmt, args);
 	va_end(args);
 	
-	UART3_puts(buff);
+	USART3_puts(buff);
 }
+
+void USART_IRQHandler(USART_TypeDef* USARTx, uint8_t* buffer, uint8_t* pRx_counter){
+    if (USARTx->ISR & USART_ISR_RXNE) {
+        buffer[*pRx_counter] = USARTx->RDR;
+        *pRx_counter = (*pRx_counter + 1) % RXBUFSIZE;
+    }
+}
+
+void USART3_IRQHandler(void) {
+    USART_IRQHandler(USART3, USART3_buffer_rx, &Rx3_counter);
+}
+
+uint8_t USART_dequeue(uint8_t* buffer, uint8_t* pNext_char){
+//    if (USART3_buffer_rx[RXBUFSIZE-1] == 1) {
+//        // buffer is empty
+//        return '?'; // what should we put here?
+//    }
+//    else {
+//        return buffer[(*pNext_char)++];
+//    }
+    return buffer[(*pNext_char)++];
+}
+

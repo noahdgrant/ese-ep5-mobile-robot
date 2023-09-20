@@ -8,7 +8,7 @@
 #ifndef __Utility_H
 #define __Utility_H
 
-#include "stm32f303xe.h"
+#include "../stm32-base/CMSIS/inc/stm32f303xe.h"
 
 /******************************************************************
 *														MACROS																*

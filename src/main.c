@@ -1,7 +1,7 @@
 /******************************************************************************
 * Name: main.c (client)
 * Author(s): Noah Grant, Wyatt Richard
-* Date: April 14, 2023
+* Date: September 15, 2023
 * Description: Encoder control for mobile robot.
 ******************************************************************************/
 
@@ -20,12 +20,12 @@
 
 int main(void){	
 	// INITIALIZE
-	uint8_t pressedKey = '\0';		// Key pressed by user
-	int8_t RCServoAngle = 0;			// Servo angle
-	uint8_t StepperMode = 0;			// Stepper mode (continuous or single output)
-	uint8_t StepperLastStep = 0;	// The last step the servo took
+	uint8_t pressedKey = '\0';		    // Key pressed by user
+	int8_t RCServoAngle = 0;		    // Servo angle
+	uint8_t StepperMode = 0;		    // Stepper mode (continuous or single output)
+	uint8_t StepperLastStep = 0;	    // The last step the servo took
 	
-	System_Clock_Init();					// Scale clock speed to 72MHz
+	System_Clock_Init();				// Scale clock speed to 72MHz
 	SystemCoreClockUpdate();
 	
 	UART3_Init();
@@ -39,7 +39,7 @@ int main(void){
 	Encoder_Init();
 	
 	// Print menu
-	UART3_printf("Embedded Systems Software Semester 4 Final Demonstration\n");
+	UART3_printf("--- Engineering Project 5 Mobile Robot ---\n");
 	UART3_printf("Press a key on the keypad\n");
 
 	// PROGRAM LOOP
