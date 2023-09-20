@@ -18,11 +18,11 @@
 
 #define BAUD_RATE 9600
 #define UART_MAX_BUFF_SIZE 100
-#define RXBUFSIZE 256
+#define RX_BUF_SIZE 256
 
-uint8_t USART3_buffer_rx[RXBUFSIZE]; // Last space need to be reserved for empty flag
-uint8_t Rx3_counter = 0;
-uint8_t Rx3_next_char = 0;
+uint8_t USART3RxBuf[RX_BUF_SIZE]; // Last space need to be reserved for empty flag
+uint8_t Rx3Counter = 0;
+uint8_t Rx3NextChar = 0;
 
 /******************************************************************
 *						 PRIVATE FUNCTIONS						  *
@@ -361,25 +361,21 @@ void USART3_printf(char* fmt, ...){
 	USART3_puts(buff);
 }
 
-void USART_IRQHandler(USART_TypeDef* USARTx, uint8_t* buffer, uint8_t* pRx_counter){
+void USART_IRQHandler(USART_TypeDef* USARTx, uint8_t* buffer, uint8_t* pRxCounter){
     if (USARTx->ISR & USART_ISR_RXNE) {
-        buffer[*pRx_counter] = USARTx->RDR;
-        *pRx_counter = (*pRx_counter + 1) % RXBUFSIZE;
+        buffer[*pRxCounter] = USARTx->RDR;
+        *pRxCounter = (*pRxCounter + 1) % RX_BUF_SIZE;
     }
 }
 
-void USART3_IRQHandler(void) {
-    USART_IRQHandler(USART3, USART3_buffer_rx, &Rx3_counter);
+void USART3_IRQHandler(void){
+    USART_IRQHandler(USART3, USART3RxBuf, &Rx3Counter);
 }
 
-uint8_t USART_dequeue(uint8_t* buffer, uint8_t* pNext_char){
-//    if (USART3_buffer_rx[RXBUFSIZE-1] == 1) {
-//        // buffer is empty
-//        return '?'; // what should we put here?
-//    }
-//    else {
-//        return buffer[(*pNext_char)++];
-//    }
-    return buffer[(*pNext_char)++];
+uint8_t USART3_dequeue(void){
+    uint8_t dequeue = USART3RxBuf[Rx3NextChar];
+    Rx3NextChar = (Rx3NextChar + 1) % RX_BUF_SIZE;
+
+    return(dequeue);
 }
 

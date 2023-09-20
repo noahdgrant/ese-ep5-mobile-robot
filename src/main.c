@@ -20,7 +20,6 @@
 
 int main(void){	
 	// INITIALIZE
-	uint8_t pressedKey = '\0';		    // Key pressed by user
 	int8_t RCServoAngle = 0;		    // Servo angle
 	uint8_t StepperMode = 0;		    // Stepper mode (continuous or single output)
 	uint8_t StepperLastStep = 0;	    // The last step the servo took
@@ -28,7 +27,7 @@ int main(void){
 	System_Clock_Init();				// Scale clock speed to 72MHz
 	SystemCoreClockUpdate();
 	
-	UART3_Init();
+	USART3_Init();
 	Stepper_Init();
 	RCServo_Init();
 	LED_Init();
@@ -39,14 +38,12 @@ int main(void){
 	Encoder_Init();
 	
 	// Print menu
-	UART3_printf("--- Engineering Project 5 Mobile Robot ---\n");
-	UART3_printf("Press a key on the keypad\n");
+	USART3_printf("--- Engineering Project 5 Mobile Robot ---\n");
+	USART3_printf("Press a key on the keypad\n");
 
 	// PROGRAM LOOP
 	while(1){
-		pressedKey = KeyPad_GetKey();
-
-		switch(pressedKey){
+		switch(USART3_dequeue()){
 			// STEPPER
 			// OFF
 			case '0':{

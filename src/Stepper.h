@@ -8,7 +8,7 @@
 #ifndef __Stepper_H
 #define __Stepper_H
 
-#include "stm32f303xe.h"
+#include "../stm32-base/CMSIS/inc/stm32f303xe.h"
 
 void Stepper_Init(void);
 void Stepper_Step(uint8_t stepType);

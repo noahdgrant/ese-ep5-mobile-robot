@@ -8,7 +8,7 @@
 #ifndef DCMOTOR_H
 #define	 DCMOTOR_H
 
-#include "stm32f303xe.h"
+#include "../stm32-base/CMSIS/inc/stm32f303xe.h"
 
 #define DCMOTOR_LEFT 0UL
 #define DCMOTOR_RIGHT	1UL
