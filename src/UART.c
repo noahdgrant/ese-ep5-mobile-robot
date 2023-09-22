@@ -21,8 +21,8 @@
 #define RX_BUFF_SIZE 256
 
 volatile uint8_t USART3RxBuff[RX_BUFF_SIZE]; // Last space need to be reserved for empty flag
-uint8_t Rx3Counter = 0;
-uint8_t Rx3NextChar = 0;
+volatile uint8_t Rx3Counter = 0;
+volatile uint8_t Rx3NextChar = 0;
 
 /******************************************************************
 *						 PRIVATE FUNCTIONS						  *
@@ -283,11 +283,23 @@ void USART3_Init(void){
     // Configure serial RTS and CTS pins
     GPIO_MODER_SET(B, 13, GPIO_MODE_AF);
     GPIO_MODER_SET(B, 14, GPIO_MODE_AF);
+
+    GPIO_MODER_SET(B, 13, 7);
+    GPIO_MODER_SET(B, 14, 7);
+    
+    GPIO_OSPEEDR_SET(B, 13, GPIO_OSPEED_LOW);
+    GPIO_OSPEEDR_SET(B, 14, GPIO_OSPEED_LOW);
+	
+    GPIO_PUPDR_SET(B, 13, GPIO_PUPD_NO);
+    GPIO_PUPDR_SET(B, 14, GPIO_PUPD_NO);
+	
+    GPIO_OTYPER_SET(B, 13, GPIO_OTYPE_PP);
+    GPIO_OTYPER_SET(B, 14, GPIO_OTYPE_PP);
 	
     // Enable USART3 interrupts
-    SET_BITS(EXTI->IMR, EXTI_IMR_IM28); // Enable USART3 interrupts
-    NVIC_EnableIRQ(USART3_IRQn);
+    SET_BITS(USART3->CR1, USART_CR1_RXNEIE);
     NVIC_SetPriority(USART3_IRQn, 0);
+    NVIC_EnableIRQ(USART3_IRQn);
 
 	USART3_Config();
 }
@@ -362,10 +374,12 @@ void USART3_printf(char* fmt, ...){
 	USART3_puts(buff);
 }
 
-void USART_IRQHandler(USART_TypeDef* USARTx, volatile uint8_t* buff, uint8_t* pRxCounter){
+void USART_IRQHandler(USART_TypeDef* USARTx, volatile uint8_t* buff, volatile uint8_t* pRxCounter){
     if (USARTx->ISR & USART_ISR_RXNE) {
-        buff[*pRxCounter] = USARTx->RDR;
-        *pRxCounter = (*pRxCounter + 1) % RX_BUFF_SIZE;
+        if ((*pRxCounter + 1) % RX_BUFF_SIZE != Rx3NextChar) {
+            buff[*pRxCounter] = USARTx->RDR;
+            *pRxCounter = (*pRxCounter + 1) % RX_BUFF_SIZE;
+        }
     }
 }
 
@@ -374,8 +388,12 @@ void USART3_IRQHandler(void){
 }
 
 uint8_t USART3_dequeue(void){
-    uint8_t dequeue = USART3RxBuff[Rx3NextChar];
-    Rx3NextChar = (Rx3NextChar + 1) % RX_BUFF_SIZE;
+    uint8_t dequeue = '\0';
+
+    if (Rx3NextChar != Rx3Counter) {
+        dequeue = USART3RxBuff[Rx3NextChar];
+        Rx3NextChar = (Rx3NextChar + 1) % RX_BUFF_SIZE;
+    }
 
     return(dequeue);
 }
