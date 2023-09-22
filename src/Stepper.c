@@ -13,7 +13,7 @@
 
 
 /******************************************************************
-*									LOCAL CONSTANTS AND VARIABLES									  *
+*					LOCAL CONSTANTS AND VARIABLES                   *
 ******************************************************************/
 
 static uint8_t stepCounter = 0xFF;		// Stepper motor pattern counter (only care about the 3 LSBs)
@@ -22,7 +22,7 @@ static uint8_t lastStepType = 0;			// Last valid step type
 
 
 /******************************************************************
-*						PRIVATE FUNCTIONS													*
+*						PRIVATE FUNCTIONS							*
 ******************************************************************/
 
 /*************************************************************
@@ -63,7 +63,7 @@ static void Stepper_Ouput(uint8_t stepPattern){
 
 
 /******************************************************************
-*						PUBLIC FUNCTIONS													*
+*						PUBLIC FUNCTIONS							*
 ******************************************************************/
 
 /*************************************************************

@@ -37,6 +37,7 @@ int main(void){
 	DCMotor_Init();
 	LCD_Init();
 	Encoder_Init();
+    PushButton_Init();
 	
 	// Print menu
 	UART_printf("Embedded Systems Software Semester 4 Final Demonstration\n");
