@@ -8,7 +8,7 @@
 #ifndef LCD_H
 #define LCD_H
 
-#include "stm32f303xe.h"
+#include "../stm32-base/CMSIS/inc/stm32f303xe.h"
 
 // Command to LCD module
 #define LCD_CMD_CLEAR				0x01			// Clear screen and set DDRAM address to 0

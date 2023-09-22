@@ -8,7 +8,7 @@
 #ifndef LED_H
 #define LED_H
 
-#include "stm32f303xe.h"
+#include "../stm32-base/CMSIS/inc/stm32f303xe.h"
 
 void LED_Init(void);
 void LED_Flash(uint32_t number_of_seconds);

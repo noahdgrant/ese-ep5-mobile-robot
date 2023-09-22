@@ -100,7 +100,6 @@ DEVICE_STARTUP = $(BASE_STARTUP)/$(MAPPED_DEVICE).s
 
 # Include the CMSIS files, using the HAL implies using the CMSIS
 ifneq (,$(or USE_ST_CMSIS, USE_ST_HAL))
-    CPPFLAGS += -I$(STM32_CUBE_PATH)/CMSIS/ARM/inc
     CPPFLAGS += -I$(STM32_CUBE_PATH)/CMSIS/inc
 
     SRC += $(STM32_CUBE_PATH)/CMSIS/src/*.c

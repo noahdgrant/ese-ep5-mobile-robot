@@ -8,16 +8,22 @@
 #ifndef __UART_H
 #define __UART_H
 
-#include "stm32f303xe.h"
+#include "../stm32-base/CMSIS/inc/stm32f303xe.h"
 
-// UART setup
-void UART2_Init(void);
+void USART2_Init(void);
+void USART2_putc(char c);
+void USART2_puts(char *str);
+char USART2_getc(void);
+char USART2_getcNB(void);
+void USART2_printf(char *format, ...);
 
-// UART I/O
-void UART_putc(char c);
-void UART_puts(char *str);
-char UART_getc(void);
-char UART_getcNB(void);
-void UART_printf(char *format, ...);
+void USART3_Init(void);
+void USART3_putc(char c);
+void USART3_puts(char *str);
+char USART3_getc(void);
+char USART3_getcNB(void);
+void USART3_printf(char *format, ...);
+
+uint8_t USART3_dequeue(void);
 
 #endif

@@ -8,7 +8,7 @@
 #ifndef __Utility_H
 #define __Utility_H
 
-#include "stm32f303xe.h"
+#include "../stm32-base/CMSIS/inc/stm32f303xe.h"
 
 /******************************************************************
 *														MACROS																*
@@ -48,12 +48,12 @@
 
 #define GPIO_AFR_SET(port, pin, mode) FORCE_BITS((GPIOx(port)->AFR[pin >> 3UL]), (15UL << ((pin & 7UL) * 4)), ((mode) << ((pin & 7UL) * 4)))
 
-#define GPIO_OSPEEDR_SET( port, pin, mode ) FORCE_BITS ( (GPIOx( port ) -> OSPEEDR), (3UL<<((pin)*2)), ((mode)<<((pin)*2)))
+#define GPIO_OSPEEDR_SET(port, pin, mode) FORCE_BITS ((GPIOx( port ) -> OSPEEDR), (3UL<<((pin)*2)), ((mode)<<((pin)*2)))
 #define GPIO_OSPEED_LOW 0UL		// x0: Low speed
 #define GPIO_OSPEED_MED 1UL		// 01: Medium speed
 #define GPIO_OSPEED_HIGH 3UL	// 11: High speed
 
-#define GPIO_ODR_SET( port, pin, state ) FORCE_BITS( GPIO(port) -> ODR, (1UL << ((pin) * 1)), ( (state) << ((pin) * 1)) )
+#define GPIO_ODR_SET(port, pin, state) FORCE_BITS(GPIO(port) -> ODR, (1UL << ((pin) * 1)), ( (state) << ((pin) * 1)))
 #define GPIO_ODR_BIT_CLEAR	0UL
 #define GPIO_ODR_BIT_SET		1UL
 
