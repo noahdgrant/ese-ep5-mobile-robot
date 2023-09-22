@@ -17,13 +17,15 @@
 #include "DCMotor.h"
 #include "LCD.h"
 #include "Encoder.h"
+#include "LimitSwitch.h"
+volatile uint8_t StepperLastStep = 0;	// The last step the stepper took
 
 int main(void){	
 	// INITIALIZE
 	uint8_t pressedKey = '\0';		// Key pressed by user
 	int8_t RCServoAngle = 0;			// Servo angle
 	uint8_t StepperMode = 0;			// Stepper mode (continuous or single output)
-	uint8_t StepperLastStep = 0;	// The last step the servo took
+	
 	
 	System_Clock_Init();					// Scale clock speed to 72MHz
 	SystemCoreClockUpdate();
@@ -38,6 +40,7 @@ int main(void){
 	LCD_Init();
 	Encoder_Init();
     PushButton_Init();
+	LimitSwitch_Init();
 	
 	// Print menu
 	UART_printf("Embedded Systems Software Semester 4 Final Demonstration\n");

@@ -38,7 +38,7 @@ void PushButton_Init(void){
     SYSCFG->EXTICR[3] |= SYSCFG_EXTICR4_EXTI13_PC;
 
     // Falling Edge trigger selection
-    EXTI->FTSR |= EXTI_RTSR1_FT13;
+    EXTI->FTSR |= EXTI_RTSR_RT13;
 
     // Configure NVIC for EXTI events on pin 10-15
     // Set its priority to 0 (next highest to NMIs)

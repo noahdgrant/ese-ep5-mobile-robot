@@ -17,9 +17,8 @@
 ******************************************************************/
 
 static uint8_t stepCounter = 0xFF;		// Stepper motor pattern counter (only care about the 3 LSBs)
-static int8_t lastStep = 0;						// Last valid step incrament
-static uint8_t lastStepType = 0;			// Last valid step type
-
+static int8_t lastStep = 0;				// Last valid step incrament
+static uint8_t lastStepType = 0;		// Last valid step type
 
 /******************************************************************
 *						PRIVATE FUNCTIONS							*
@@ -115,42 +114,34 @@ void Stepper_Step(uint8_t stepType){
 		}
 		// Full-step clockwise
 		case 1:{
-            if(LimitSwitch_PressCheck(1)){
-                stepCounter += 2;
-                Stepper_Ouput(stepPatterns[0x7 & stepCounter]);		// & with 0x7 because we just want the lower 3 bits
-                lastStepType = 1;
-                lastStep = 2;
-            }
+            stepCounter += 2;
+    	    Stepper_Ouput(stepPatterns[0x7 & stepCounter]);		// & with 0x7 because we just want the lower 3 bits
+            lastStepType = 1;
+            lastStep = 2;
 			break;
 		}
 		// Full-step counter-clockwise
 		case 2:{
-            if(LimitSwitch_PressCheck(0)){
-                stepCounter -= 2;
-                Stepper_Ouput(stepPatterns[0x7 & stepCounter]);		// & with 0x7 because we just want the lower 3 bits
-                lastStepType = 2;
-                lastStep = -2;
-            }
+            stepCounter -= 2;
+            Stepper_Ouput(stepPatterns[0x7 & stepCounter]);		// & with 0x7 because we just want the lower 3 bits
+            lastStepType = 2;
+            lastStep = -2;
 			break;
 		}
 		// Half-step clockwise
 		case 3:{
-            if(LimitSwitch_PressCheck(1)){
-                stepCounter++;
-                Stepper_Ouput(stepPatterns[0x7 & stepCounter]);		// & with 0x7 because we just want the lower 3 bits
-                lastStepType = 3;
-                lastStep = 1;
-            }
+            stepCounter++;
+            Stepper_Ouput(stepPatterns[0x7 & stepCounter]);		// & with 0x7 because we just want the lower 3 bits
+            lastStepType = 3;
+            lastStep = 1;
 			break;
 		}
 		// Half-step counter-clockwise
 		case 4:{
-            if(LimitSwitch_PressCheck(0)){
-                stepCounter--;
-                Stepper_Ouput(stepPatterns[0x7 & stepCounter]);		// & with 0x7 because we just want the lower 3 bits
-                lastStepType = 4;
-                lastStep = -1;
-            }
+            stepCounter--;
+            Stepper_Ouput(stepPatterns[0x7 & stepCounter]);		// & with 0x7 because we just want the lower 3 bits
+            lastStepType = 4;
+            lastStep = -1;
 			break;
 		}
 		// Repeat last valid input if bad value is passed to the funciton

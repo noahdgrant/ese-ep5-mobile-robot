@@ -8,6 +8,8 @@
 #include "LimitSwitch.h"
 #include "Utility.h"
 #include "stm32f303xe.h"
+#include "Stepper.h"
+
 
 /******************************************************************
 *						PUBLIC FUNCTIONS						    *
@@ -22,7 +24,7 @@ void LimitSwitch_Init(void){
     // Enable GPIO Port C
     ENABLE_GPIO_CLOCK(C);
     // left  -> PC5
-    // right -> pc6
+    // right -> pC6
 
     //Set PC5 to INPUT mode (00)
     GPIO_MODER_SET(C, 5, GPIO_MODE_IN);
@@ -35,6 +37,29 @@ void LimitSwitch_Init(void){
 
     // Set PUPD to no-pull (00 for pin 6)
     GPIO_PUPDR_SET(C, 6, GPIO_PUPD_NO);
+
+
+    EXTI->IMR |= EXTI_IMR_IM5; // Enable interrupt
+    EXTI->IMR |= EXTI_IMR_IM6; // Enable interrupt
+
+    // Connect External Line to the GPI
+    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
+
+    SYSCFG->EXTICR[1] &= ~SYSCFG_EXTICR2_EXTI5;
+    SYSCFG->EXTICR[1] |= SYSCFG_EXTICR2_EXTI5_PC;
+
+    SYSCFG->EXTICR[1] &= ~SYSCFG_EXTICR2_EXTI6;
+    SYSCFG->EXTICR[1] |= SYSCFG_EXTICR2_EXTI6_PC;
+
+    // Falling Edge trigger selection
+    EXTI->FTSR |= EXTI_RTSR_RT5;
+
+    EXTI->FTSR |= EXTI_RTSR_RT6;
+
+    // Configure NVIC for EXTI events on pin 5-9
+    // Set its priority to 0 (next highest to NMIs)
+    NVIC_EnableIRQ( EXTI9_5_IRQn );
+    NVIC_SetPriority( EXTI9_5_IRQn, 0 );
 
 }
 
@@ -65,5 +90,21 @@ uint8_t LimitSwitch_PressCheck(uint8_t direction){
             // If cleared, button is pressed.
             return(1);
         }
+    }
+}
+
+void EXTI9_5_IRQHandler(void) {
+    extern volatile uint8_t StepperLastStep;	// The last step the servo took
+
+    if ((EXTI->PR & EXTI_PR_PIF5) != 0) {
+        StepperLastStep = 0;
+        // Cleared flag by writing 1
+        EXTI->PR |= EXTI_PR_PIF5;
+    }
+    
+    else if ((EXTI->PR & EXTI_PR_PIF6) != 0) {
+        StepperLastStep = 0;
+        // Cleared flag by writing 1
+        EXTI->PR |= EXTI_PR_PIF6;
     }
 }

@@ -2,6 +2,6 @@
 bin
 obj
 .idea
-
+src/.vscode
 # File types
 *Zone.Identifier
