@@ -18,9 +18,9 @@
 
 #define BAUD_RATE 9600
 #define UART_MAX_BUFF_SIZE 100
-#define RX_BUF_SIZE 256
+#define RX_BUFF_SIZE 256
 
-uint8_t USART3RxBuf[RX_BUF_SIZE]; // Last space need to be reserved for empty flag
+uint8_t USART3RxBuff[RX_BUFF_SIZE]; // Last space need to be reserved for empty flag
 uint8_t Rx3Counter = 0;
 uint8_t Rx3NextChar = 0;
 
@@ -285,6 +285,7 @@ void USART3_Init(void){
     GPIO_MODER_SET(B, 14, GPIO_MODE_AF);
 	
     // Enable USART3 interrupts
+    SET_BITS(EXTI->IMR, EXTI_IMR_IM28); // Enable USART3 interrupts
     NVIC_EnableIRQ(USART3_IRQn);
     NVIC_SetPriority(USART3_IRQn, 0);
 
@@ -361,20 +362,20 @@ void USART3_printf(char* fmt, ...){
 	USART3_puts(buff);
 }
 
-void USART_IRQHandler(USART_TypeDef* USARTx, uint8_t* buffer, uint8_t* pRxCounter){
+void USART_IRQHandler(USART_TypeDef* USARTx, uint8_t* buff, uint8_t* pRxCounter){
     if (USARTx->ISR & USART_ISR_RXNE) {
-        buffer[*pRxCounter] = USARTx->RDR;
-        *pRxCounter = (*pRxCounter + 1) % RX_BUF_SIZE;
+        buff[*pRxCounter] = USARTx->RDR;
+        *pRxCounter = (*pRxCounter + 1) % RX_BUFF_SIZE;
     }
 }
 
 void USART3_IRQHandler(void){
-    USART_IRQHandler(USART3, USART3RxBuf, &Rx3Counter);
+    USART_IRQHandler(USART3, USART3RxBuff, &Rx3Counter);
 }
 
 uint8_t USART3_dequeue(void){
-    uint8_t dequeue = USART3RxBuf[Rx3NextChar];
-    Rx3NextChar = (Rx3NextChar + 1) % RX_BUF_SIZE;
+    uint8_t dequeue = USART3RxBuff[Rx3NextChar];
+    Rx3NextChar = (Rx3NextChar + 1) % RX_BUFF_SIZE;
 
     return(dequeue);
 }

@@ -27,8 +27,8 @@ char USART3_getc(void);
 char USART3_getcNB(void);
 void USART3_printf(char *format, ...);
 
-void USART_IRQHandler(USART_TypeDef* USARTx, uint8_t* buffer, uint8_t* pRxCounter);
-void USART3_IRQHandler(void);
+//void USART_IRQHandler(USART_TypeDef* USARTx, uint8_t* buff, uint8_t* pRxCounter);
+//void USART3_IRQHandler(void);
 uint8_t USART3_dequeue(void);
 
 #endif
