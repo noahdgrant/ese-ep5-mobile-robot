@@ -20,7 +20,7 @@
 #define UART_MAX_BUFF_SIZE 100
 #define RX_BUFF_SIZE 256
 
-uint8_t USART3RxBuff[RX_BUFF_SIZE]; // Last space need to be reserved for empty flag
+volatile uint8_t USART3RxBuff[RX_BUFF_SIZE]; // Last space need to be reserved for empty flag
 uint8_t Rx3Counter = 0;
 uint8_t Rx3NextChar = 0;
 
@@ -362,7 +362,7 @@ void USART3_printf(char* fmt, ...){
 	USART3_puts(buff);
 }
 
-void USART_IRQHandler(USART_TypeDef* USARTx, uint8_t* buff, uint8_t* pRxCounter){
+void USART_IRQHandler(USART_TypeDef* USARTx, volatile uint8_t* buff, uint8_t* pRxCounter){
     if (USARTx->ISR & USART_ISR_RXNE) {
         buff[*pRxCounter] = USARTx->RDR;
         *pRxCounter = (*pRxCounter + 1) % RX_BUFF_SIZE;

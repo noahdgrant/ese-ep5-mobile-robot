@@ -10,25 +10,20 @@
 
 #include "../stm32-base/CMSIS/inc/stm32f303xe.h"
 
-// UART setup
 void USART2_Init(void);
-void USART3_Init(void);
-
-// UART I/O
 void USART2_putc(char c);
 void USART2_puts(char *str);
 char USART2_getc(void);
 char USART2_getcNB(void);
 void USART2_printf(char *format, ...);
 
+void USART3_Init(void);
 void USART3_putc(char c);
 void USART3_puts(char *str);
 char USART3_getc(void);
 char USART3_getcNB(void);
 void USART3_printf(char *format, ...);
 
-//void USART_IRQHandler(USART_TypeDef* USARTx, uint8_t* buff, uint8_t* pRxCounter);
-//void USART3_IRQHandler(void);
 uint8_t USART3_dequeue(void);
 
 #endif
