@@ -1,9 +1,9 @@
-/******************************************************************************
+/*******************************************************************************
 * Name: main.c (client)
 * Author(s): Noah Grant, Wyatt Richard
 * Date: September 15, 2023
 * Description: Encoder control for mobile robot.
-******************************************************************************/
+*******************************************************************************/
 
 #include "SysClock.h"
 #include "Utility.h"
@@ -18,7 +18,7 @@
 #include "LCD.h"
 #include "Encoder.h"
 
-int main(void){	
+int main(void) {	
 	// INITIALIZE
 	int8_t RCServoAngle = 0;		    // Servo angle
 	uint8_t StepperMode = 0;		    // Stepper mode (continuous or single output)

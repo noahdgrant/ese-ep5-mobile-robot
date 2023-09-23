@@ -1,9 +1,9 @@
-/********************************************************************************
+/*******************************************************************************
 * Name: UART.h (interface)
 * Author(s): Noah Grant, Wyatt Richard
 * Date: January 25, 2023
 * Description: UART functions to initialize, configure, and Tx/Rx.
-********************************************************************************/
+*******************************************************************************/
 
 #ifndef __UART_H
 #define __UART_H
@@ -23,7 +23,6 @@ void USART3_puts(char *str);
 char USART3_getc(void);
 char USART3_getcNB(void);
 void USART3_printf(char *format, ...);
-
 uint8_t USART3_dequeue(void);
 
 #endif
