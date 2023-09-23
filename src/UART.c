@@ -6,6 +6,7 @@
 *******************************************************************************/
 
 #include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #include "UART.h"
@@ -81,9 +82,7 @@ static void USART3_Config(void) {
 	
 	// Configure data size (8bit), start bit (1), stop bit (1/2/1.5), parity bit (no parity, even / odd parity)
 	CLEAR_BITS(USART3->CR1, USART_CR1_M);
-	
 	CLEAR_BITS(USART3->CR1, USART_CR1_OVER8);
-	
 	CLEAR_BITS(USART3->CR2, USART_CR2_STOP);
 	
 	// Enable transmit and receive block (TE and RE)
