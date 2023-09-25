@@ -1,33 +1,33 @@
-/******************************************************************************
+/*******************************************************************************
 * Name: RCservo.c (implementation)
 * Author(s): Noah Grant, Wyatt Richard
 * Date: February 10, 2023
 * Description: RC servo motor conrol for mobile robot.
-******************************************************************************/
+*******************************************************************************/
 
 #include "RCServo.h"
 #include "stm32f303xe.h"
 #include "Utility.h"
 
 
-/******************************************************************
-*									LOCAL CONSTANTS AND VARIABLES									  *
-******************************************************************/
+/*******************************************************************************
+*						LOCAL CONSTANTS AND VARIABLES						   *
+*******************************************************************************/
 
-#define SERVO_CENTRE 1500			// Servo centre pulse width (us)
+#define SERVO_CENTRE 1500		// Servo centre pulse width (us)
 #define SERVO_NEG_LMT 1050		// Servo negative mechanical limit pulse width (us)
 #define SERVO_POS_LMT 1950		// Servo positive mechanical limit pulse width (us)
-#define US_PER_DEGREE 10			// Servo us/degree pulse width ratio
+#define US_PER_DEGREE 10		// Servo us/degree pulse width ratio
 
-/******************************************************************
+/*******************************************************************************
 *												PUBLIC FUNCTIONS													*
-******************************************************************/
+*******************************************************************************/
 
-/****************************************************
+/*******************************************************************************
 * RCServo_init() - Configure setting for servo motor.
 * No inputs.
 * No return value.
-****************************************************/
+*******************************************************************************/
 void RCServo_Init(void){
 	// Set up PB15 to Output, AF1, PP, no Pull
 	// 1. Enable clock to Port B
@@ -110,11 +110,11 @@ void RCServo_Init(void){
 	SET_BITS(TIM15->CR1, TIM_CR1_CEN);
 }
 
-/*********************************************************************************
+/*******************************************************************************
 * RCServo_setAngle() - Sets angle of the servo motor by updating the pulse width.
 * angle		- Servo motor angle.
 * Returns pulse width based on input angle.
-**********************************************************************************/
+*******************************************************************************/
 int16_t RCServo_SetAngle(int16_t angle){
 	int16_t PW = 0;	// Pulse width
 	

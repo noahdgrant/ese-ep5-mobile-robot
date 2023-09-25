@@ -1,9 +1,9 @@
-/********************************************************************************
+/*******************************************************************************
 * Name: DCMotor.c (implementation)
 * Author(s): Noah Grant, Wyatt Richard
 * Date: March 24, 2023
 * Description: DC motor functions.
-********************************************************************************/
+*******************************************************************************/
 
 #include "DCMotor.h"
 #include "Utility.h"
@@ -24,11 +24,11 @@
 // (A)  0      1     0      1     
 // (B)  0      0     1      1
 
-/*************************************************************
+/*******************************************************************************
 * DCMotor_Init() - Initiate and configure DC motors.
 * No inputs.
 * No return value.
-*************************************************************/	
+*******************************************************************************/
 void DCMotor_Init(void){
 	ENABLE_GPIO_CLOCK(C);		// Enable GPIO Clock
 	
@@ -77,18 +77,18 @@ void DCMotor_Init(void){
 	
 	// Configure TIM8 for CH1N and CH2N
 	SET_BITS(RCC->APB2ENR, RCC_APB2ENR_TIM8EN);		// Turn on Timer 8
-	SET_BITS(TIM8->PSC, 71UL);										// Set PSC so it counts in 1us
+	SET_BITS(TIM8->PSC, 71UL);						// Set PSC so it counts in 1us
 		// Timer Period = (Prescaler + 1) / SystemClockFreq
 		// 1us = (Prescaler + 1) / 72MHz
 		// (Prescaler + 1) = 72
 		// Prescaler = 71
-	CLEAR_BITS(TIM8->CR1, TIM_CR1_DIR);						// Set TIM8 counting direction to upcounting
-	FORCE_BITS(TIM8->ARR, 0xFFFFUL, 999UL);				// Set ARR to 999us
+	CLEAR_BITS(TIM8->CR1, TIM_CR1_DIR);				// Set TIM8 counting direction to upcounting
+	FORCE_BITS(TIM8->ARR, 0xFFFFUL, 999UL);			// Set ARR to 999us
 		// ARR = Repeating Counter Period - 1
 		// ARR = 1000us - 1
 		// ARR = 999us
-	SET_BITS(TIM8->CR1, TIM_CR1_ARPE);						// Enable ARR preload (ARPE) in CR1
-	SET_BITS(TIM8->BDTR, TIM_BDTR_MOE);						// Set main output enabled (MOE) in BDTR
+	SET_BITS(TIM8->CR1, TIM_CR1_ARPE);				// Enable ARR preload (ARPE) in CR1
+	SET_BITS(TIM8->BDTR, TIM_BDTR_MOE);				// Set main output enabled (MOE) in BDTR
 	
 	
 	// Configure CH1N of TIM8 for Left Wheel PWM output compare mode
@@ -112,23 +112,23 @@ void DCMotor_Init(void){
 	SET_BITS(TIM8->CR1, TIM_CR1_CEN);				// Enable TIM8 to start counting
 }
 
-/*************************************************************
+/*******************************************************************************
 * DCMotor_SetSpeed() - Sets the speed for a DC motor.
 * motor				- The motor to set the speed for.
 * dutyCycle		- The desired % of duty cycle for ON-time.
 * No return value.
-*************************************************************/	
+*******************************************************************************/
 void DCMotor_SetSpeed(uint8_t motor, uint16_t dutyCycle){	
 	// Cap duty cycle %
 	if(dutyCycle > 100){
 		dutyCycle = 100;
 	}
 	else if(dutyCycle < 50){
-		dutyCycle = 50;		// The DC motors do not start spinning if the duty cycle is < 50%
+		dutyCycle = 50;     // The DC motors do not start spinning if the duty cycle is < 50%
 	}
 	
 	// Convert to ms ON-time
-	dutyCycle *= 10;	// dutyCycle = (dutyCycle * 1000) / 100
+	dutyCycle *= 10;        // dutyCycle = (dutyCycle * 1000) / 100
 	
 	// Output PW duty cycle
 	if(motor == DCMOTOR_LEFT){
@@ -139,12 +139,12 @@ void DCMotor_SetSpeed(uint8_t motor, uint16_t dutyCycle){
 	}
 }	
 
-/*************************************************************
+/*******************************************************************************
 * DCMotor_SetDir() - Sets the direction of a DC motor.
 * motor		- The motor to set the direction of.
 * dir			- The direction the DC motor should spin.
 * No return value.
-*************************************************************/	
+*******************************************************************************/
 void DCMotor_SetDir(uint8_t motor, uint8_t dir){
 	// - Motor Direction Control Pins:
 	//	Left Motor Forward (A)	PC12
@@ -202,53 +202,53 @@ void DCMotor_SetDir(uint8_t motor, uint8_t dir){
 	}
 }
 
-/*******************************************************************
+/*******************************************************************************
 * DCMotor_SetMotor() - Set the speed and direction of one motor.
 * dir						- motor direction.
 * dutyCycle			- motor duty cycle.
 * No return value.
-*******************************************************************/	
+*******************************************************************************/
 void DCMotor_SetMotor(uint8_t motor, uint8_t dir, uint16_t dutyCycle){
 	DCMotor_SetDir(motor, dir);
 	DCMotor_SetSpeed(motor, dutyCycle);
 }
 
-/*******************************************************************
+/*******************************************************************************
 * DCMotor_SetMotors() - Sets the speed and direction of both motors.
 * leftDir						- Left motor direction.
 * leftDutyCycle			- Left motor duty cycle.
 * rightDir					- Right motor direction.
 * rightDutyCycle		- Right motor duty cycle.
 * No return value.
-*******************************************************************/	
+*******************************************************************************/
 void DCMotor_SetMotors(uint8_t leftDir, uint16_t leftDutyCycle, uint8_t rightDir, uint16_t rightDutyCycle){
 	DCMotor_SetMotor(DCMOTOR_LEFT, leftDir, leftDutyCycle);
 	DCMotor_SetMotor(DCMOTOR_RIGHT, rightDir, rightDutyCycle);
 }
 
-/*******************************************************************
+/*******************************************************************************
 * DCMotor_Stop() - Stops both motors.
 * No inputs.
 * No return value.
-*******************************************************************/	
+*******************************************************************************/
 void DCMotor_Stop(void){
 	DCMotor_SetMotors(DCMOTOR_STOP, 0, DCMOTOR_STOP, 0);
 }
 
-/*******************************************************************
+/*******************************************************************************
 * DCMotor_Forward() - Both motors spin forwards.
 * dutyCycle		- The desired % of duty cycle for ON-time.
 * No return value.
-*******************************************************************/	
+*******************************************************************************/
 void DCMotor_Forward(uint16_t dutyCycle){
 	DCMotor_SetMotors(DCMOTOR_FWD, dutyCycle, DCMOTOR_FWD, dutyCycle);
 }
 
-/*******************************************************************
+/*******************************************************************************
 * DCMotor_Backward() - Both motors spin backwards.
 * dutyCycle		- The desired % of duty cycle for ON-time.
 * No return value.
-*******************************************************************/	
+*******************************************************************************/
 void DCMotor_Backward(uint16_t dutyCycle){
 	DCMotor_SetMotors(DCMOTOR_BWD, dutyCycle, DCMOTOR_BWD, dutyCycle);
 }

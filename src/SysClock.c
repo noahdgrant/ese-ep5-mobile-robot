@@ -1,7 +1,7 @@
 #include "SysClock.h"
 
 
-/***********************************************************************************************
+/*******************************************************************************
 // Shell code for Nucleo-64 STM32F303RE @ 72 MHz
 //
 // Initialize the system clocks as follows:
@@ -13,13 +13,13 @@
 //		- use HSE instead of HSI
 //		- 72 MHz for F303 vs 80 MHz for L476
 //
-***********************************************************************************************/
+*******************************************************************************/
 
 void System_Clock_Init(void){
 
 	// To correctly read data from FLASH memory, the number of wait states (LATENCY)
-  // must be correctly programmed according to the frequency of the CPU clock
-  // (HCLK) and the supply voltage of the device.		
+    // must be correctly programmed according to the frequency of the CPU clock
+    // (HCLK) and the supply voltage of the device.
 	FLASH->ACR &= ~FLASH_ACR_LATENCY;
 	FLASH->ACR |=  FLASH_ACR_LATENCY_2;
 		
