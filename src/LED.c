@@ -11,7 +11,7 @@
 
 
 /******************************************************************
-*												PUBLIC FUNCTIONS													*
+*						PUBLIC FUNCTIONS													*
 ******************************************************************/
 
 /******************************************
@@ -23,7 +23,7 @@ void LED_Init(void){
 	// 1. Turn on AHB so GPIOs are ON
 	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
 	
-	// 2. GPIO Mode Regisgter -> set to OUTPUT
+	// 2. GPIO Mode Register -> set to OUTPUT
 	GPIOA->MODER &= ~(3UL << (2*5)); 	// Reset two bits for PA5
 																		//3UL is 11 in binary
 																		// 2 bits per pin for MODER and need to move 5 pin down

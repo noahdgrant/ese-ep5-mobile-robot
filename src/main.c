@@ -17,12 +17,15 @@
 #include "DCMotor.h"
 #include "LCD.h"
 #include "Encoder.h"
+#include "LimitSwitch.h"
+volatile uint8_t StepperLastStep = 0;	// The last step the stepper took
 
 int main(void) {	
 	// INITIALIZE
-	int8_t RCServoAngle = 0;		    // Servo angle
-	uint8_t StepperMode = 0;		    // Stepper mode (continuous or single output)
-	uint8_t StepperLastStep = 0;	    // The last step the servo took
+
+	int8_t RCServoAngle = 0;			// Servo angle
+	uint8_t StepperMode = 0;			// Stepper mode (continuous or single output)
+
 	
 	System_Clock_Init();				// Scale clock speed to 72MHz
 	SystemCoreClockUpdate();
@@ -36,6 +39,8 @@ int main(void) {
 	DCMotor_Init();
 	LCD_Init();
 	Encoder_Init();
+    PushButton_Init();
+	LimitSwitch_Init();
 	
 	// Print menu
 	USART3_printf("--- Engineering Project 5 Mobile Robot ---\n");
