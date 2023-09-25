@@ -1,6 +1,3 @@
-#ifndef __STM32F303RE_NUCLEO64_CLOCK_H
-#define __STM32F303RE_NUCLEO64_CLOCK_H
-
 /***********************************************************************************************
 // Shell code for Nucleo-64 STM32F303RE @ 72 MHz
 //
@@ -10,7 +7,10 @@
 //
 ***********************************************************************************************/
 
-#include "stm32f303xe.h"
+#ifndef __STM32F303RE_NUCLEO64_CLOCK_H
+#define __STM32F303RE_NUCLEO64_CLOCK_H
+
+#include "../stm32-base/CMSIS/inc/stm32f303xe.h"
 
 void System_Clock_Init(void);
 

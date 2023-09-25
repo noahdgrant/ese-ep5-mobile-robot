@@ -8,7 +8,7 @@
 #ifndef __MOTOR_ENCODER_H
 #define __MOTOR_ENCODER_H
 
-#include "stm32f303xe.h"
+#include "../stm32-base/CMSIS/inc/stm32f303xe.h"
 #include "Utility.h"
 
 #define ENCODER_PORT A
