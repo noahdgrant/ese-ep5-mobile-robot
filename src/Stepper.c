@@ -152,3 +152,23 @@ void Stepper_Step(uint8_t stepType){
 		}
 	}
 }
+
+uint8_t Stepper_Range(void) {
+    uint8_t rangeCount = 0;
+    extern volatile uint8_t StepperLastStep;    // The last step the servo took
+    do{
+        Stepper_Step(3)                // half step clock-wise
+    }
+    while(StepperLastStep!=0);
+
+    do{
+        rangeCount++;
+        Stepper_Step(4)                // half step counter clock-wise
+    }
+    while(StepperLastStep!=0);
+
+    for(int i = 0; i< rangeCount/4;i++){
+        Stepper_Step(1);
+    }
+    return rangeCount;
+}
