@@ -12,5 +12,6 @@
 
 void Stepper_Init(void);
 void Stepper_Step(uint8_t stepType);
+uint8_t Stepper_Range(void);
 
 #endif

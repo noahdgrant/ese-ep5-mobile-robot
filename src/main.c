@@ -41,6 +41,8 @@ int main(void) {
 	Encoder_Init();
     PushButton_Init();
 	LimitSwitch_Init();
+
+	Stepper_Range();
 	
 	// Print menu
 	USART3_printf("--- Engineering Project 5 Mobile Robot ---\n");
