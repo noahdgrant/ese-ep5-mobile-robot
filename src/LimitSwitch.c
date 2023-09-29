@@ -51,10 +51,10 @@ void LimitSwitch_Init(void){
     SYSCFG->EXTICR[1] &= ~SYSCFG_EXTICR2_EXTI6;
     SYSCFG->EXTICR[1] |= SYSCFG_EXTICR2_EXTI6_PC;
 
-    // Falling Edge trigger selection
-    EXTI->FTSR |= EXTI_RTSR_RT5;
+    // Rising Edge trigger selection
+    EXTI->RTSR |= EXTI_RTSR_RT5;
 
-    EXTI->FTSR |= EXTI_RTSR_RT6;
+    EXTI->RTSR |= EXTI_RTSR_RT6;
 
     // Configure NVIC for EXTI events on pin 5-9
     // Set its priority to 0 (next highest to NMIs)
@@ -96,13 +96,13 @@ uint8_t LimitSwitch_PressCheck(uint8_t direction){
 void EXTI9_5_IRQHandler(void) {
     extern volatile uint8_t StepperLastStep;	// The last step the servo took
 
-    if ((EXTI->PR & EXTI_PR_PIF5) != 0) {
+    if ((EXTI->PR & EXTI_PR_PIF5) != 0) { // left limit
         StepperLastStep = 0;
         // Cleared flag by writing 1
         EXTI->PR |= EXTI_PR_PIF5;
     }
     
-    else if ((EXTI->PR & EXTI_PR_PIF6) != 0) {
+    else if ((EXTI->PR & EXTI_PR_PIF6) != 0) { // right limit
         StepperLastStep = 0;
         // Cleared flag by writing 1
         EXTI->PR |= EXTI_PR_PIF6;

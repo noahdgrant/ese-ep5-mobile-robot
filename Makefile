@@ -149,4 +149,16 @@ else
 	$(error $(FLASHING_TOOL) not recognized)
 endif
 
+# Make reflash
+reflash:
+	make clean
+	make
+	make flash
+
+# Make rebuild
+rebuild:
+	make clean
+	make
+
+
 .PHONY: all clean flash
