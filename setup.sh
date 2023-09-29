@@ -4,7 +4,7 @@
 
 # INSTALL PACKAGES
 # stlink: https://github.com/stlink-org/stlink/blob/v1.5.1/doc/compiling.md
-sudo apt -y install make stlink-tools curl
+sudo apt -y install make stlink-tools curl screen
 
 # arm GNU toolchain
 # https://developer.arm.com/Tools%20and%20Software/GNU%20Toolchain#Technical-Specifications

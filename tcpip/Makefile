@@ -2,5 +2,5 @@
 
 all: server client
 
-server: server.c
+server: server.c serial.c
 client: client.c

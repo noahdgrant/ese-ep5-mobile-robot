@@ -113,6 +113,13 @@ int main (int argc, char *argv[])
 		}	/* endif */
 
         printf("connection established to client with ID %d\n", client_addr.sin_addr.s_addr);
+    
+        serial_port = Serial_Open();
+        if (serial_port == -1) {
+            printf("Serial port did not open correctly\n");
+            return 5;
+        }
+        printf("Serial port setup complete\n");
 
 		/*
 		 * fork a child
@@ -121,7 +128,8 @@ int main (int argc, char *argv[])
 		if (fork() == 0) {
             while (1) {
                 printf("waiting for command from client\n");
-                read (client_socket, buffer, BUFSIZ);
+                memset(buffer, 0, sizeof(buffer));
+                read(client_socket, buffer, BUFSIZ);
 
                 // PROCESS COMMAND
                 // Close client connection
@@ -130,53 +138,35 @@ int main (int argc, char *argv[])
                     len = strlen(buffer);
                     write (client_socket, buffer, len);
                     close (client_socket);
-                    printf("Client connection closed\n\n");
+                    printf("Client connection closed\n");
+                   
+                    Serial_Close(serial_port);
+                    printf("Serial port closed\n\n");
                     break;
+                
                 // Shutdown server
                 } else if (strcmp(buffer, "shutdown") == 0 ) {
                     strcpy(buffer, "Server connection closed\n");
                     len = strlen(buffer);
                     write (client_socket, buffer, len);
                     close(client_socket);
+                    
+                    Serial_Close(serial_port);
+                    printf("Serial port closed\n\n");
+                    
                     shutdown(server_socket, SHUT_RDWR);
                     printf("Server shutdown complete\n");
                     return 0;
-                } else if (strcmp (buffer, "date") == 0) {
-                    if (len = (p = popen ("date", "r")) != NULL) {
-                        len = fread (buffer, 1, sizeof (buffer), p);
-                        pclose (p);
-                    } else {
-                        strcpy (buffer, "Can't run date command\n");
-                        len = strlen (buffer);
-                    }	/* endif */
-                } else if (strcmp (buffer, "who") == 0) {
-                    if (len = (p = popen ("who", "r")) != NULL) {
-                        len = fread (buffer, 1, sizeof (buffer), p);
-                        pclose (p);
-                    } else {
-                        strcpy (buffer, "Can't run who command\n");
-                        len = strlen (buffer);
-                    }	/* endif */
-                } else if (strcmp (buffer, "df") == 0) {
-                    if (len = (p = popen ("df", "r")) != NULL) {
-                        len = fread (buffer, 1, sizeof (buffer), p);
-                        pclose (p);
-                    } else {
-                        strcpy (buffer, "Can't run df command\n");
-                        len = strlen (buffer);
-                    }	/* endif */
-                } else {
-                    strcpy(buffer, "invalid command\n");
-                    len = strlen(buffer);
-                }
 
-                /*
-                 * write data to client, close socket, and exit child app
-                 */
-                printf("writing to client\n");
-                write (client_socket, buffer, len);
-                memset(buffer, 0, sizeof(buffer));
-                printf("successfully wrote to client\n");
+                // Send command to robot
+                } else {
+                    printf("tx: %s\n", buffer);
+                    Serial_Write(serial_port, buffer);
+                    Serial_Read(serial_port, buffer);
+                    len = strlen(buffer);
+                    printf("rx: %s\n", buffer);
+                    write(client_socket, buffer, len);
+                }
             }
 		} else {
 			/*
