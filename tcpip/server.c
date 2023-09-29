@@ -16,8 +16,11 @@
 #include <signal.h>
 #include <sys/wait.h>
 
-char buffer[BUFSIZ];
+#include "serial.h"
 
+char buffer[BUFSIZ];
+int serial_port;
+char serial_read_buf[256];
 
 /*
  * this signal handler is used to catch the termination
@@ -109,7 +112,7 @@ int main (int argc, char *argv[])
 			return 4;
 		}	/* endif */
 
-        printf("connection established to %d\n", client_addr.sin_addr.s_addr);
+        printf("connection established to client with ID %d\n", client_addr.sin_addr.s_addr);
 
 		/*
 		 * fork a child
