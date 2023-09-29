@@ -43,6 +43,7 @@ int main(void) {
 	LimitSwitch_Init();
 
 	Stepper_Range();
+    RCServo_SetAngle(-30);
 	
 	// Print menu
 	USART3_printf("--- Engineering Project 5 Mobile Robot ---\n");
@@ -121,7 +122,7 @@ int main(void) {
 			case '8':{
 				USART3_printf("User Input: 8");
 				USART3_printf("\nCentre Servo");
-				RCServoAngle = 0;
+				RCServoAngle = -30;
 				RCServo_SetAngle(RCServoAngle);
 				break;
 			}
