@@ -159,22 +159,21 @@ uint8_t Stepper_Range(void) {
 	StepperLastStep = 1;
     while(StepperLastStep!=0){
         Stepper_Step(1);						// full step clock-wise
-		Delay_ms(50);
+		Delay_ms(5);
     }
-    
 
 	StepperLastStep = 4;
     while(StepperLastStep!=0){
         rangeCount++;
-        Stepper_Step(4);						// half step counter clock-wise
-		Delay_ms(50);
+        Stepper_Step(2);						// half step counter clock-wise
+		Delay_ms(5);
     }
     
 
 	StepperLastStep = 0;
-    for(int i = 0; i< rangeCount/4;i++){
+    for(int i = 0; i< rangeCount/2;i++){
         Stepper_Step(1);
-		Delay_ms(50);
+		Delay_ms(5);
     }
     return rangeCount;
 }
