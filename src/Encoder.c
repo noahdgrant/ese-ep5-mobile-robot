@@ -55,7 +55,7 @@ void Encoder_Init(void){
 		// (Prescaler + 1) = 72
 		// Prescaler = 71
 	CLEAR_BITS(TIM2->CR1, TIM_CR1_DIR);				// Set counting direction to upcounting
-	
+    // SET_BITS(TIM2->CR1, TIM_CR1_URS);				// Set Update request source to only accept overflow/underflow
 	
 	// Configure TIM2 CH1 for input capture on Left Encoder
 	SET_BITS(TIM2->CCMR1, TIM_CCMR1_CC1S_0);						// Input capture mode for CH1 (normal mode  0%01)
@@ -74,8 +74,9 @@ void Encoder_Init(void){
 	// Configure TIM2 to generate interrupts and configure NVIC to respond
 	SET_BITS(TIM2->DIER, TIM_DIER_CC1IE);						    // Enable encoder CH1 to trigger IRQ
 	SET_BITS(TIM2->DIER, TIM_DIER_CC2IE);						    // Enable encoder CH2 to trigger IRQ
+    SET_BITS(TIM2->DIER, TIM_DIER_UIE);						        // Enable timer overflow to trigger IRQ
 	NVIC_EnableIRQ(TIM2_IRQn);									    // Enable TIM2 IRQ (TIM2_IRQn) in NVIC
-	NVIC_SetPriority(TIM2_IRQn, ENCODER_PRIORITY);	// Set NVIC priority
+	NVIC_SetPriority(TIM2_IRQn, ENCODER_PRIORITY);	                // Set NVIC priority
 	 
 	// Start TIM2 CH1 and CH2 Input Captures
 	SET_BITS(TIM2->EGR, TIM_EGR_UG);						        // Force an update event to preload all the registers
@@ -98,7 +99,12 @@ void TIM2_IRQHandler(void){
 	if(IS_BIT_SET(TIM2->SR, TIM_SR_CC2IF)){
 		rightEncoder[1] = rightEncoder[0];
 		rightEncoder[0] = TIM2->CCR2;
-	}	
+	}
+
+    if(IS_BIT_SET(TIM2->SR, TIM_SR_UIF)){
+        // increase overflow counter variable
+    }
+
 }
 
 /*******************************************************************************

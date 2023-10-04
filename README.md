@@ -14,5 +14,7 @@ Run the setup.sh script to download and setup all project dependencies.
 
 ## Build
 - Run 'make' to compile to project.
-- Run 'make clean' to compile project from scratch.
+- Run 'make clean' to remove compiled files.
 - Run 'make flash' to flash the STM32 device.
+- Run 'make rebuild' to compile project from scratch.
+- Run 'make reflash' to compile project from scratch and flash the STM32 device.

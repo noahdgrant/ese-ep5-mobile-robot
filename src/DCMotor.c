@@ -73,8 +73,22 @@ void DCMotor_Init(void){
 	// Pull-up / Pull-down = No Pull
 	GPIO_PUPDR_SET(C, 10, GPIO_PUPD_NO);
 	GPIO_PUPDR_SET(C, 11, GPIO_PUPD_NO);
-	
-	
+
+    // Set up Timer 4
+    SET_BITS(RCC->APB1ENR, RCC_APB1ENR_TIM4EN);		    // Turn on Timer 4
+    SET_BITS(TIM4->PSC, 0xFFFFUL);                      // Set PSC so it counts in 1us
+    // should be 71ul, set to this to test timer, should go off roughly once every three seconds
+    CLEAR_BITS(TIM4->CR1, TIM_CR1_DIR);                 // Set TIM4 counting direction to upcounting
+    FORCE_BITS(TIM4->ARR, 0xFFFFUL, 2997UL);		    // Set ARR to 2997us
+    SET_BITS(TIM4->CR1, TIM_CR1_ARPE);				    // Enable ARR preload (ARPE) in CR1
+    //SET_BITS(TIM4->BDTR, TIM_BDTR_MOE);				// Set main output enabled (MOE) in BDTR
+
+    SET_BITS(TIM4->DIER, TIM_DIER_UIE);                 // Enable timer overflow to trigger IRQ
+    NVIC_EnableIRQ(TIM4_IRQn);						    // Enable TIM2 IRQ (TIM2_IRQn) in NVIC
+    NVIC_SetPriority(TIM4_IRQn, CONTROL_LAW_PRIORITY);	// Set NVIC priority
+    SET_BITS(TIM4->EGR, TIM_EGR_UG);				    // Force an update event to preload all the registers
+    SET_BITS(TIM4->CR1, TIM_CR1_CEN);				    // Enable TIM4 to start counting
+
 	// Configure TIM8 for CH1N and CH2N
 	SET_BITS(RCC->APB2ENR, RCC_APB2ENR_TIM8EN);		// Turn on Timer 8
 	SET_BITS(TIM8->PSC, 71UL);						// Set PSC so it counts in 1us
@@ -92,19 +106,19 @@ void DCMotor_Init(void){
 	
 	
 	// Configure CH1N of TIM8 for Left Wheel PWM output compare mode
-	FORCE_BITS(TIM8->CCMR1, TIM_CCMR1_OC1M_Msk, 0x6UL << TIM_CCMR1_OC1M_Pos);				// Set TIM8 to PWM mode
-	SET_BITS(TIM8->CCMR1, TIM_CCMR1_OC1PE); 																				// Enable output compare preload on channel 1
-	SET_BITS(TIM8->CCER, TIM_CCER_CC1NE);																						// Enable the COMPLEMENTARY output channel (CH1N)
-	CLEAR_BITS(TIM8->CCER, TIM_CCER_CC1NP);																					// Make CH1N active HI
-	CLEAR_BITS(TIM8->CCR1, TIM_CCR1_CCR1);																					// Set the CH1N initial PWM ON-time to 0us
+	FORCE_BITS(TIM8->CCMR1, TIM_CCMR1_OC1M_Msk, 0x6UL << TIM_CCMR1_OC1M_Pos);		// Set TIM8 to PWM mode
+	SET_BITS(TIM8->CCMR1, TIM_CCMR1_OC1PE); 										// Enable output compare preload on channel 1
+	SET_BITS(TIM8->CCER, TIM_CCER_CC1NE);											// Enable the COMPLEMENTARY output channel (CH1N)
+	CLEAR_BITS(TIM8->CCER, TIM_CCER_CC1NP);											// Make CH1N active HI
+	CLEAR_BITS(TIM8->CCR1, TIM_CCR1_CCR1);											// Set the CH1N initial PWM ON-time to 0us
 	
 	
 	// Configure CH2N of TIM8 for Right Wheel PWM output compare mode
-	FORCE_BITS(TIM8->CCMR1, TIM_CCMR1_OC2M_Msk, 0x6UL << TIM_CCMR1_OC2M_Pos);				// Set TIM8 to PWM mode
-	SET_BITS(TIM8->CCMR1, TIM_CCMR1_OC2PE); 																				// Enable output compare preload on channel 2
-	SET_BITS(TIM8->CCER, TIM_CCER_CC2NE);																						// Enable the COMPLEMENTARY output channel (CH2N)
-	CLEAR_BITS(TIM8->CCER, TIM_CCER_CC2NP);																					// Make CH2N active HI
-	CLEAR_BITS(TIM8->CCR1, TIM_CCR1_CCR1);																					// Set the CH2N initial PWM ON-time to 0us
+	FORCE_BITS(TIM8->CCMR1, TIM_CCMR1_OC2M_Msk, 0x6UL << TIM_CCMR1_OC2M_Pos);	    // Set TIM8 to PWM mode
+	SET_BITS(TIM8->CCMR1, TIM_CCMR1_OC2PE); 										// Enable output compare preload on channel 2
+	SET_BITS(TIM8->CCER, TIM_CCER_CC2NE);											// Enable the COMPLEMENTARY output channel (CH2N)
+	CLEAR_BITS(TIM8->CCER, TIM_CCER_CC2NP);											// Make CH2N active HI
+	CLEAR_BITS(TIM8->CCR1, TIM_CCR1_CCR1);											// Set the CH2N initial PWM ON-time to 0us
 	
 	
 	// Start TIM8 CH1N and CH2N Outputs
@@ -251,4 +265,13 @@ void DCMotor_Forward(uint16_t dutyCycle){
 *******************************************************************************/
 void DCMotor_Backward(uint16_t dutyCycle){
 	DCMotor_SetMotors(DCMOTOR_BWD, dutyCycle, DCMOTOR_BWD, dutyCycle);
+}
+
+void TIM4_IRQHandler(void){
+
+    if(IS_BIT_SET(TIM4->SR, TIM_SR_UIF)){
+        // run control law if...
+        // for testing purposes set to toggle led
+    }
+
 }
