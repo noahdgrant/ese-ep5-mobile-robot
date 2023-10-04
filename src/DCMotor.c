@@ -83,6 +83,9 @@ void DCMotor_Init(void){
     SET_BITS(TIM4->CR1, TIM_CR1_ARPE);				    // Enable ARR preload (ARPE) in CR1
     //SET_BITS(TIM4->BDTR, TIM_BDTR_MOE);				// Set main output enabled (MOE) in BDTR
 
+    CLEAR_BITS(TIM4->CR1, TIM_CR1_UDIS);                // Set update request source
+    CLEAR_BITS(TIM4->CR1, TIM_CR1_URS);                 // Enable update
+
     SET_BITS(TIM4->DIER, TIM_DIER_UIE);                 // Enable timer overflow to trigger IRQ
     NVIC_EnableIRQ(TIM4_IRQn);						    // Enable TIM2 IRQ (TIM2_IRQn) in NVIC
     NVIC_SetPriority(TIM4_IRQn, CONTROL_LAW_PRIORITY);	// Set NVIC priority
@@ -271,7 +274,11 @@ void TIM4_IRQHandler(void){
 
     if(IS_BIT_SET(TIM4->SR, TIM_SR_UIF)){
         // run control law if...
-        // for testing purposes set to toggle led
+
+        // Toggle LED
+        LED_Toggle();
+        // do we need to clear the flag?
+        CLEAR_BITS(TIM4->SR, TIM_SR_UIF);
     }
 
 }

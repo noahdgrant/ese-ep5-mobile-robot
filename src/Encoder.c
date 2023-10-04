@@ -56,6 +56,7 @@ void Encoder_Init(void){
 		// Prescaler = 71
 	CLEAR_BITS(TIM2->CR1, TIM_CR1_DIR);				// Set counting direction to upcounting
     // SET_BITS(TIM2->CR1, TIM_CR1_URS);				// Set Update request source to only accept overflow/underflow
+    CLEAR_BITS(TIM2->CR1, TIM_CR1_UDIS);
 	
 	// Configure TIM2 CH1 for input capture on Left Encoder
 	SET_BITS(TIM2->CCMR1, TIM_CCMR1_CC1S_0);						// Input capture mode for CH1 (normal mode  0%01)
