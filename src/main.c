@@ -98,7 +98,6 @@ int main(void) {
 			// ping ultrasonic
 			case '5':{
 				Ultra_StartTrigger();
-				while(!Ultra_EchoRx());
 				USART3_printf("User Input: 5");
 				USART3_printf("\nUltrasonic: %dcm", Ultra_ReadSensor());
 				break;

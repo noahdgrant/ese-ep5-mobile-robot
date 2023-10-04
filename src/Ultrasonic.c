@@ -1,7 +1,7 @@
 /*******************************************************************************
 * Name: Ultrasonic.c (implementation)
 * Author(s): Noah Grant, Wyatt Richard
-* Date: March 17, 2023
+* Date: October 4, 2023
 * Description: Ultrasonic sensor functions. Ultrasonic sensor is in polling mode.
 *******************************************************************************/
 
@@ -12,11 +12,11 @@
 *								STATIC VARIABLES				  			   *
 *******************************************************************************/
 	
-static uint32_t Global_UltraEcho;
+uint32_t Global_UltraEcho;
 
 
 /*******************************************************************************
-*								PUBLIC FUNCTIONS							   *
+*								PRIVATE FUNCTIONS							   *
 *******************************************************************************/
 
 /*******************************************************************************
@@ -91,11 +91,15 @@ static void Ultra_InitEcho(void){
 	// Enable Counter Capture
 	SET_BITS(TIM3->CCER, TIM_CCER_CC1E);
 	SET_BITS(TIM3->CR1, TIM_CR1_CEN);				// Enable TIM3 main counter
+
+    // Configure interrupts for Echo pin
+    NVIC_SetPriority( EXTI9_5_IRQn, 0 );
+    NVIC_EnableIRQ( EXTI9_5_IRQn );
 }
 
 
 /*******************************************************************************
-*									PUBLIC FUNCTIONS						   *
+*								PUBLIC FUNCTIONS						       *
 *******************************************************************************/
 
 /*******************************************************************************
@@ -118,20 +122,6 @@ void Ultra_StartTrigger(void){
 }
 
 /*******************************************************************************
-* Ultra_EchoRx() - Checks whether echo has been received.
-* No inputs.
-* Returns TRUE if echo received or FALSE if it hasn't.
-*******************************************************************************/
-uint8_t Ultra_EchoRx(void){
-	// Check whether (CC1IF) in SR is set
-	if(IS_BIT_SET(TIM3->SR, TIM_SR_CC1IF)){
-		Global_UltraEcho = TIM3->CCR1;	// Record TIM3 CCR1 value in a global variable for further processing
-		return(1);
-	}
-	return(0);
-}
-
-/*******************************************************************************
 * Ultra_ReadSensor() - Calculates the distance to the object infront of the sensor.
 * No inputs.
 * Returns the distance in cm to the object infront of the sensor.
@@ -139,3 +129,4 @@ uint8_t Ultra_EchoRx(void){
 uint32_t Ultra_ReadSensor(void){
 	return(Global_UltraEcho / 59);		// Equation from ESS W7 slides (#6)
 }
+
