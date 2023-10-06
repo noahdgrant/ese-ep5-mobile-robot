@@ -14,6 +14,7 @@
 
 uint32_t Global_LeftEncoderPeriod = 0;
 uint32_t Global_RightEncoderPeriod = 0;
+uint8_t overFlowCounter = 0;
 
 
 /*******************************************************************************
@@ -54,9 +55,11 @@ void Encoder_Init(void){
 		// 1us = (Prescaler + 1) / 72MHz
 		// (Prescaler + 1) = 72
 		// Prescaler = 71
+    SET_BITS(TIM2->ARR, 0xFFFFUL);
+
 	CLEAR_BITS(TIM2->CR1, TIM_CR1_DIR);				// Set counting direction to upcounting
-    // SET_BITS(TIM2->CR1, TIM_CR1_URS);				// Set Update request source to only accept overflow/underflow
-    CLEAR_BITS(TIM2->CR1, TIM_CR1_UDIS);
+    CLEAR_BITS(TIM2->CR1, TIM_CR1_URS);			    // Enable update
+    CLEAR_BITS(TIM2->CR1, TIM_CR1_UDIS);            // Set update request source
 	
 	// Configure TIM2 CH1 for input capture on Left Encoder
 	SET_BITS(TIM2->CCMR1, TIM_CCMR1_CC1S_0);						// Input capture mode for CH1 (normal mode  0%01)
@@ -76,8 +79,8 @@ void Encoder_Init(void){
 	SET_BITS(TIM2->DIER, TIM_DIER_CC1IE);						    // Enable encoder CH1 to trigger IRQ
 	SET_BITS(TIM2->DIER, TIM_DIER_CC2IE);						    // Enable encoder CH2 to trigger IRQ
     SET_BITS(TIM2->DIER, TIM_DIER_UIE);						        // Enable timer overflow to trigger IRQ
-	NVIC_EnableIRQ(TIM2_IRQn);									    // Enable TIM2 IRQ (TIM2_IRQn) in NVIC
-	NVIC_SetPriority(TIM2_IRQn, ENCODER_PRIORITY);	                // Set NVIC priority
+	NVIC_EnableIRQ(TIM2_IRQn);							    // Enable TIM2 IRQ (TIM2_IRQn) in NVIC
+	NVIC_SetPriority(TIM2_IRQn, ENCODER_PRIORITY);	    // Set NVIC priority
 	 
 	// Start TIM2 CH1 and CH2 Input Captures
 	SET_BITS(TIM2->EGR, TIM_EGR_UG);						        // Force an update event to preload all the registers
@@ -104,6 +107,8 @@ void TIM2_IRQHandler(void){
 
     if(IS_BIT_SET(TIM2->SR, TIM_SR_UIF)){
         // increase overflow counter variable
+        overFlowCounter++;
+        CLEAR_BITS(TIM2->SR, TIM_SR_UIF);
     }
 
 }
@@ -114,10 +119,15 @@ void TIM2_IRQHandler(void){
 * No return value.
 *******************************************************************************/
 void Encoder_CalculateSpeed(void){
-	Global_LeftEncoderPeriod = leftEncoder[0] - leftEncoder[1];			// Calculate encoder period (current - previous)
-	leftEncoder[1] = leftEncoder[0] = 0;								// Update previous measurement to current measurement
-	
-	Global_RightEncoderPeriod = rightEncoder[0] - rightEncoder[1];		// Calculate encoder period
-	rightEncoder[1] = rightEncoder[0] = 0;								// Update previous measurement to current measurement
+    Global_LeftEncoderPeriod = leftEncoder[0] - leftEncoder[1];			// Calculate encoder period (current - previous)
+    Global_RightEncoderPeriod = rightEncoder[0] - rightEncoder[1];		// Calculate encoder period
 
+    if(overFlowCounter>1) {
+        Global_LeftEncoderPeriod += overFlowCounter*0xffff;
+        Global_RightEncoderPeriod += overFlowCounter*0xffff;
+    }
+    overFlowCounter = 0;
+
+    //Global_LeftEncoderVel = 2741/leftEncoderPeriod;
+    //Global_RightEncoderVel = 2741/rightEncoderPeriod;
 }
