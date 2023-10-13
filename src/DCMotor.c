@@ -88,7 +88,7 @@ void DCMotor_Init(void){
     SET_BITS(TIM4->PSC, 71UL);                          // Set PSC so it counts in 1us
     // should be 71ul, set to this to test timer, should go off roughly once every three seconds
     CLEAR_BITS(TIM4->CR1, TIM_CR1_DIR);                 // Set TIM4 counting direction to upcounting
-    FORCE_BITS(TIM4->ARR, 0xFFFFUL, 33333UL);           // Set ARR to 33333us
+    FORCE_BITS(TIM4->ARR, 0xFFFFUL, 33332UL);           // Set ARR to 33333us
     SET_BITS(TIM4->CR1, TIM_CR1_ARPE);                  // Enable ARR preload (ARPE) in CR1
     //SET_BITS(TIM4->BDTR, TIM_BDTR_MOE);               // Set main output enabled (MOE) in BDTR
     CLEAR_BITS(TIM4->CR1, TIM_CR1_UDIS);                // Set update request source
@@ -140,12 +140,12 @@ void DCMotor_Init(void){
 /*******************************************************************************
 * DCMotor_SetMotor()    - Set the speed and direction of one motor.
 * dir                   - motor direction.
-* velocity              - desired motor velocity in m/s.
+* velocity              - desired motor velocity in cm/s.
 * No return value.
 *******************************************************************************/
 void DCMotor_SetMotor(uint8_t motor, uint8_t dir, uint16_t velocity){
     DCMotor_SetDir(motor, dir);
-    setPoint[motor] = 274.1/velocity;
+    setPoint[motor] = 2*velocity;
 }
 
 /*******************************************************************************
@@ -168,6 +168,7 @@ void DCMotor_SetMotors(uint8_t leftDir, uint16_t leftVelocity, uint8_t rightDir,
 *******************************************************************************/
 void DCMotor_Stop(void){
     DCMotor_SetMotors(DCMOTOR_STOP, 0, DCMOTOR_STOP, 0);
+    // need to fix, divide by 0
 }
 
 /*******************************************************************************
@@ -280,38 +281,41 @@ void DCMotor_SetDir(uint8_t motor, uint8_t dir){
 
 
 void TIM4_IRQHandler(void){
-    static unint32_t speedError, SpeedErrorIntegral;
-    uint32_t driveValue;
+    static int32_t speedError[2] = {0, 0};
+    static int32_t speedErrorIntegral[2] = {0, 0};
+    uint32_t driveValue[2] = {0, 0};
 
     if(IS_BIT_SET(TIM4->SR, TIM_SR_UIF)){
         // run control law if...
+        for(int i=0;i<2;i++){
+            // calculate error term
+            speedError[i] = (int32_t)setPoint[i] - (int32_t)(FEEDBACK_SCALE_FACTOR/Global_EncoderPeriod[i]); // swap (s32) with some data type to cast, make sure to set setpoint in DCMotor_setMotor
 
-        // calculate error term
-        speedError = (S32)setpoint - (S32)(FEEDBACK_SCALE_FACTOR/encoderVanePeriod); // swap (s32) with some data type to cast, make sure to set setpoint in DCMotor_setMotor
+            // check for stupid speed error
+            if ((speedError[i] < STUPID_SPEED_ERROR) && (speedError[i] > -STUPID_SPEED_ERROR)) {
+                // update integral term but only if drive is not on the rail
+                if ((((motorPWMvalue == MIN_DRIVE_VALUE) && (speedError[i] > 0)) || ((motorPWMvalue == MAX_DRIVE_VALUE) && (speedError[i] < 0))) || ((motorPWMvalue > MIN_DRIVE_VALUE) && (motorPWMvalue < MAX_DRIVE_VALUE))){
+                    speedErrorIntegral[i] += speedError[i];
+                }
 
-        // check for stupid speed error
-        if ((speedError < STUPID_SPEED_ERROR) && (speedError > -STUPID_SPEED_ERROR)) {
-            // update integral term but only if drive is not on the rail
-            if ((motorPWMvalue == MIN_DRIVE_VALUE) && (speedError > 0)) || ((motorPWMvalue == MAX_DRIVE_VALUE) && (speedError < 0)) || ((motorPWMvalue > MIN_DRIVE_VALUE) && (motorPWMvalue < MAX_DRIVE_VALUE)){
-                SpeedErrorIntegral += speedError;
-            }
+                // calculate the control law (NB: PI - no derivative term)
+                // This is ALL integer math.
+                driveValue[i] = ((speedError[i] * P_GAIN) + (speedErrorIntegral[i] * I_GAIN)) / GAIN_DIVISOR;
 
-            // calculate the control law (NB: PI - no derivative term)
-            // This is ALL integer math.
-            driveValue = ((speedError * P_GAIN) + (speedErrorIntegral * I_GAIN)) / GAIN_DIVISOR;
+                /* limit the controller output to range of PWM */
+                if (driveValue[i] > MAX_DRIVE_VALUE){
+                    driveValue[i] = MAX_DRIVE_VALUE;
+                }
+                else if (driveValue[i] < MIN_DRIVE_VALUE) {
+                    driveValue[i] = MIN_DRIVE_VALUE;
+                }
+                /* Save the motor drive value for next time.
+                NB: This is where you write to the PWM hardware too */
+                // motorPWMvalue = (uint8_t)driveValue[i];
+                DCMotor_SetPWM(i, (uint8_t)driveValue[i]);
+            } // if speedError not stupid
 
-            /* limit the controller output to range of PWM */
-            if (driveValue > MAX_DRIVE_VALUE)
-                driveValue = MAX_DRIVE_VALUE;
-            else if (driveValue < MIN_DRIVE_VALUE)
-                driveValue = MIN_DRIVE_VALUE;
-            /* Save the motor drive value for next time.
-            NB: This is where you write to the PWM hardware too */
-            motorPWMvalue = (byte)driveValue;
-        } // if speedError not stupid
-
-
-
+        }
 
         // clear the flag
         CLEAR_BITS(TIM4->SR, TIM_SR_UIF);

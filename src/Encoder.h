@@ -31,7 +31,6 @@ void Encoder_Init(void);
 void TIM2_IRQHandler(void);
 void Encoder_CalculateSpeed(void);
 
-extern uint32_t Global_LeftEncoderPeriod;
-extern uint32_t Global_RightEncoderPeriod;
+extern uint32_t Global_EncoderPeriod[2];
 
 #endif

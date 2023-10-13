@@ -12,9 +12,8 @@
 *								GLOBAL VARIABLES							   *
 *******************************************************************************/
 
-uint32_t Global_LeftEncoderPeriod = 0;
-uint32_t Global_RightEncoderPeriod = 0;
-uint8_t overFlowCounter = 0;
+uint32_t Global_EncoderPeriod[2] = {0, 0};      // [0] = left, [1] = right
+uint8_t overFlowCounter[2] = {0, 0};            // [0] = left, [1] = right
 
 
 /*******************************************************************************
@@ -97,17 +96,20 @@ void TIM2_IRQHandler(void){
 	if(IS_BIT_SET(TIM2->SR, TIM_SR_CC1IF)){
 		leftEncoder[1] = leftEncoder[0];
 		leftEncoder[0] = TIM2->CCR1;
+        overFlowCounter[0] = 0;       // left overflow counter
 	}
 	
 	// Right wheel interrupt
 	if(IS_BIT_SET(TIM2->SR, TIM_SR_CC2IF)){
 		rightEncoder[1] = rightEncoder[0];
 		rightEncoder[0] = TIM2->CCR2;
+        overFlowCounter[1] = 0;       // right overflow counter
 	}
 
     if(IS_BIT_SET(TIM2->SR, TIM_SR_UIF)){
         // increase overflow counter variable
-        overFlowCounter++;
+        overFlowCounter[0]++;       // left overflow counter
+        overFlowCounter[1]++;       // right overflow counter
         CLEAR_BITS(TIM2->SR, TIM_SR_UIF);
     }
 
@@ -119,15 +121,8 @@ void TIM2_IRQHandler(void){
 * No return value.
 *******************************************************************************/
 void Encoder_CalculateSpeed(void){
-    Global_LeftEncoderPeriod = leftEncoder[0] - leftEncoder[1];			// Calculate encoder period (current - previous)
-    Global_RightEncoderPeriod = rightEncoder[0] - rightEncoder[1];		// Calculate encoder period
-
-    if(overFlowCounter>1) {
-        Global_LeftEncoderPeriod += overFlowCounter*0xffff;
-        Global_RightEncoderPeriod += overFlowCounter*0xffff;
-    }
-    overFlowCounter = 0;
-
+    Global_EncoderPeriod[0] = leftEncoder[0] + overFlowCounter[0]*65536 - leftEncoder[1];			// Calculate encoder period (current - previous)
+    Global_EncoderPeriod[1] = rightEncoder[0] + overFlowCounter[1]*65536 - rightEncoder[1];		// Calculate encoder period
     //Global_LeftEncoderVel = 2741/leftEncoderPeriod;
     //Global_RightEncoderVel = 2741/rightEncoderPeriod;
 }

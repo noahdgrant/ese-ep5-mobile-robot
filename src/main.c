@@ -178,7 +178,7 @@ int main(void) {
 			case 'D':{
 				Encoder_CalculateSpeed();
 				USART3_printf("User Input: D");
-				USART3_printf("\nL: %d R: %d", Global_LeftEncoderPeriod, Global_RightEncoderPeriod);
+				USART3_printf("\nL: %d R: %d", Global_EncoderPeriod[0], Global_EncoderPeriod[1]);
 				break;
 			}
 		}

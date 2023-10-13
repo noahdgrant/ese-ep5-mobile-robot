@@ -21,11 +21,13 @@
 #define I_GAIN                  1
 #define P_GAIN                  1
 #define GAIN_DIVISOR            1
-#define FEEDBACK_SCALE_FACTOR   1
+#define FEEDBACK_SCALE_FACTOR   65536
 #define MAX_DRIVE_VALUE         100
 #define MIN_DRIVE_VALUE         50
+#define STUPID_SPEED_ERROR      1
+//needs one gain per wheel
 
-extern uint32_t Global_LeftEncoderPeriod
+extern uint32_t Global_EncoderPeriod[2];
 
 void DCMotor_SetDir(uint8_t motor, uint8_t dir);
 void DCMotor_SetPWM(uint8_t motor, uint16_t dutyCycle);
