@@ -49,42 +49,45 @@ int main(void) {
 	USART3_printf("--- Engineering Project 5 Mobile Robot ---\n");
 	USART3_printf("Press a key on the keypad\n");
 
+
+
+    DCMotor_SetMotors(1, 50, 1, 50);
+
+
 	// PROGRAM LOOP
 	while(1){
 		switch(USART3_dequeue()){
 			// STEPPER
 			// OFF
 			case '0':{
-				USART3_printf("User Input: 0");
-				USART3_printf("\nStepper Off");
-
-				StepperLastStep = 0;
-				Stepper_Step(0);
+				USART3_printf("User Input: 0\n");
+				USART3_printf("Input new value for I gain");
+                I_GAIN[0] = USART3_dequeue();
+                I_GAIN[1] = I_GAIN[0];
 				break;
 			}
 			// Full step CW
 			case '1':{
 				USART3_printf("User Input: 1");
-				USART3_printf("\nFull Step CW");
-
-				StepperLastStep = 1;
-				Stepper_Step(1);
-				break;
+                USART3_printf("Input new value for P gain");
+                P_GAIN[0] = USART3_dequeue();
+                P_GAIN[1] = P_GAIN[0];
+                break;
 			}
 			// Full step CCW
 			case '2':{
 				USART3_printf("User Input: 2");
-				USART3_printf("\nFull Step CCW");
-				StepperLastStep = 2;
-				Stepper_Step(2);
+                USART3_printf("Input new value for I gain");
+                GAIN_DIVISOR[0] = USART3_dequeue();
+                GAIN_DIVISOR[1] = GAIN_DIVISOR[0];
 				break;
 			}
 			// Half step CW
 			case '3':{
 				USART3_printf("User Input: 3");
-				USART3_printf("\nHalf Step CW");
-				StepperLastStep = 3;
-				Stepper_Step(3);
+                USART3_printf("Desired Velocity (cm/s)");
+                int vel = USART3_dequeue();
+                DCMotor_SetMotors(1, vel, 1, vel);
 				break;
 			}
 			// Half step CCW

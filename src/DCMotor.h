@@ -18,14 +18,13 @@
 
 //Control Law Values
 #define DCMOTOR_PRIORITY        9
-#define I_GAIN                  1
-#define P_GAIN                  1
-#define GAIN_DIVISOR            1
 #define FEEDBACK_SCALE_FACTOR   65536
 #define MAX_DRIVE_VALUE         100
 #define MIN_DRIVE_VALUE         50
-#define STUPID_SPEED_ERROR      1
-//needs one gain per wheel
+#define STUPID_SPEED_ERROR      100000
+extern uint8_t I_GAIN[2];
+extern uint8_t P_GAIN[2];
+extern uint8_t GAIN_DIVISOR[2];
 
 extern uint32_t Global_EncoderPeriod[2];
 

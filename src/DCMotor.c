@@ -29,7 +29,10 @@
 *******************************************************************************/
 
 static uint32_t setPoint[2] = {0, 0}; // desired velocity
-static uint32_t motorPWMvalue; // PWM Value calculated by control law
+static uint32_t motorPWMvalue[2] = {50, 50}; // PWM Value calculated by control law
+uint8_t I_GAIN[2] = {1, 1};
+uint8_t P_GAIN[2] = {1, 1};
+uint8_t GAIN_DIVISOR[2] = {1, 1};
 
 /*******************************************************************************
 *                               PUBLIC FUNCTIONS                               *
@@ -294,13 +297,13 @@ void TIM4_IRQHandler(void){
             // check for stupid speed error
             if ((speedError[i] < STUPID_SPEED_ERROR) && (speedError[i] > -STUPID_SPEED_ERROR)) {
                 // update integral term but only if drive is not on the rail
-                if ((((motorPWMvalue == MIN_DRIVE_VALUE) && (speedError[i] > 0)) || ((motorPWMvalue == MAX_DRIVE_VALUE) && (speedError[i] < 0))) || ((motorPWMvalue > MIN_DRIVE_VALUE) && (motorPWMvalue < MAX_DRIVE_VALUE))){
+                if ((((motorPWMvalue[i] == MIN_DRIVE_VALUE) && (speedError[i] > 0)) || ((motorPWMvalue[i] == MAX_DRIVE_VALUE) && (speedError[i] < 0))) || ((motorPWMvalue[i] > MIN_DRIVE_VALUE) && (motorPWMvalue[i] < MAX_DRIVE_VALUE))){
                     speedErrorIntegral[i] += speedError[i];
                 }
 
                 // calculate the control law (NB: PI - no derivative term)
                 // This is ALL integer math.
-                driveValue[i] = ((speedError[i] * P_GAIN) + (speedErrorIntegral[i] * I_GAIN)) / GAIN_DIVISOR;
+                driveValue[i] = ((speedError[i] * P_GAIN[i]) + (speedErrorIntegral[i] * I_GAIN[i])) / GAIN_DIVISOR[i];
 
                 /* limit the controller output to range of PWM */
                 if (driveValue[i] > MAX_DRIVE_VALUE){
@@ -311,8 +314,8 @@ void TIM4_IRQHandler(void){
                 }
                 /* Save the motor drive value for next time.
                 NB: This is where you write to the PWM hardware too */
-                // motorPWMvalue = (uint8_t)driveValue[i];
-                DCMotor_SetPWM(i, (uint8_t)driveValue[i]);
+                motorPWMvalue[i] = (uint8_t)driveValue[i];
+                DCMotor_SetPWM(i, motorPWMvalue[i]);
             } // if speedError not stupid
 
         }
