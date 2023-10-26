@@ -7,7 +7,6 @@
 
 #include "DCMotor.h"
 #include "Utility.h"
-#include "stm32f303xe.h"
 
 // Drive Motor Configuration Parameters
 // - Motor Speed Control Pins:
@@ -28,11 +27,6 @@
 *                               STATIC VARIABLES                               *
 *******************************************************************************/
 
-static uint32_t setPoint[2] = {0, 0}; // desired velocity
-static uint32_t motorPWMvalue[2] = {50, 50}; // PWM Value calculated by control law
-uint8_t I_GAIN[2] = {1, 1};
-uint8_t P_GAIN[2] = {1, 1};
-uint8_t GAIN_DIVISOR[2] = {1, 1};
 
 /*******************************************************************************
 *                               PUBLIC FUNCTIONS                               *
@@ -86,21 +80,6 @@ void DCMotor_Init(void){
     GPIO_PUPDR_SET(C, 10, GPIO_PUPD_NO);
     GPIO_PUPDR_SET(C, 11, GPIO_PUPD_NO);
 
-    // Set up Timer 4
-    SET_BITS(RCC->APB1ENR, RCC_APB1ENR_TIM4EN);         // Turn on Timer 4
-    SET_BITS(TIM4->PSC, 71UL);                          // Set PSC so it counts in 1us
-    // should be 71ul, set to this to test timer, should go off roughly once every three seconds
-    CLEAR_BITS(TIM4->CR1, TIM_CR1_DIR);                 // Set TIM4 counting direction to upcounting
-    FORCE_BITS(TIM4->ARR, 0xFFFFUL, 33332UL);           // Set ARR to 33333us
-    SET_BITS(TIM4->CR1, TIM_CR1_ARPE);                  // Enable ARR preload (ARPE) in CR1
-    //SET_BITS(TIM4->BDTR, TIM_BDTR_MOE);               // Set main output enabled (MOE) in BDTR
-    CLEAR_BITS(TIM4->CR1, TIM_CR1_UDIS);                // Set update request source
-    CLEAR_BITS(TIM4->CR1, TIM_CR1_URS);                 // Enable update
-    SET_BITS(TIM4->DIER, TIM_DIER_UIE);                 // Enable timer overflow to trigger IRQ
-    NVIC_EnableIRQ(TIM4_IRQn);                    // Enable TIM2 IRQ (TIM2_IRQn) in NVIC
-    NVIC_SetPriority(TIM4_IRQn, DCMOTOR_PRIORITY);  // Set NVIC priority
-    SET_BITS(TIM4->EGR, TIM_EGR_UG);                    // Force an update event to preload all the registers
-    SET_BITS(TIM4->CR1, TIM_CR1_CEN);                   // Enable TIM4 to start counting
 
 
     // Configure TIM8 for CH1N and CH2N
@@ -138,85 +117,6 @@ void DCMotor_Init(void){
     // Start TIM8 CH1N and CH2N Outputs
     SET_BITS(TIM8->EGR, TIM_EGR_UG);                // Force an update event to preload all the registers
     SET_BITS(TIM8->CR1, TIM_CR1_CEN);               // Enable TIM8 to start counting
-}
-
-/*******************************************************************************
-* DCMotor_SetMotor()    - Set the speed and direction of one motor.
-* dir                   - motor direction.
-* velocity              - desired motor velocity in cm/s.
-* No return value.
-*******************************************************************************/
-void DCMotor_SetMotor(uint8_t motor, uint8_t dir, uint16_t velocity){
-    DCMotor_SetDir(motor, dir);
-    setPoint[motor] = 2*velocity;
-}
-
-/*******************************************************************************
-* DCMotor_SetMotors()   - Sets the speed and direction of both motors.
-* leftDir               - Left motor direction.
-* leftDutyCycle         - Left motor duty cycle.
-* rightDir              - Right motor direction.
-* rightDutyCycle        - Right motor duty cycle.
-* No return value.
-*******************************************************************************/
-void DCMotor_SetMotors(uint8_t leftDir, uint16_t leftVelocity, uint8_t rightDir, uint16_t rightVelocity){
-    DCMotor_SetMotor(DCMOTOR_LEFT, leftDir, leftVelocity);
-    DCMotor_SetMotor(DCMOTOR_RIGHT, rightDir, rightVelocity);
-}
-
-/*******************************************************************************
-* DCMotor_Stop() - Stops both motors.
-* No inputs.
-* No return value.
-*******************************************************************************/
-void DCMotor_Stop(void){
-    DCMotor_SetMotors(DCMOTOR_STOP, 0, DCMOTOR_STOP, 0);
-    // need to fix, divide by 0
-}
-
-/*******************************************************************************
-* DCMotor_Forward() - Both motors spin forwards.
-* dutyCycle         - The desired % of duty cycle for ON-time.
-* No return value.
-*******************************************************************************/
-void DCMotor_Forward(uint16_t velocity){
-    DCMotor_SetMotors(DCMOTOR_FWD, velocity, DCMOTOR_FWD, velocity);
-}
-
-/*******************************************************************************
-* DCMotor_Backward()    - Both motors spin backwards.
-* dutyCycle             - The desired % of duty cycle for ON-time.
-* No return value.
-*******************************************************************************/
-void DCMotor_Backward(uint16_t velocity){
-    DCMotor_SetMotors(DCMOTOR_BWD, velocity, DCMOTOR_BWD, velocity);
-}
-
-/*******************************************************************************
-* DCMotor_SetPWM()  - Sets the pwm for a DC motor.
-* motor             - The motor to set the speed for.
-* dutyCycle         - The desired % of duty cycle for ON-time.
-* No return value.
-*******************************************************************************/
-void DCMotor_SetPWM(uint8_t motor, uint16_t dutyCycle){
-    // Cap duty cycle %
-    if(dutyCycle > MAX_DRIVE_VALUE){
-        dutyCycle = MAX_DRIVE_VALUE;
-    }
-    else if(dutyCycle < MIN_DRIVE_VALUE){
-        dutyCycle = MIN_DRIVE_VALUE;     // The DC motors do not start spinning if the duty cycle is < 50%
-    }
-
-    // Convert to ms ON-time
-    dutyCycle *= 10;        // dutyCycle = (dutyCycle * 1000) / 100
-
-    // Output PW duty cycle
-    if(motor == DCMOTOR_LEFT){
-        FORCE_BITS(TIM8->CCR1, 0xFFFFUL, dutyCycle);
-    }
-    else if(motor == DCMOTOR_RIGHT){
-        FORCE_BITS(TIM8->CCR2, 0xFFFFUL, dutyCycle);
-    }
 }
 
 /*******************************************************************************
@@ -282,46 +182,79 @@ void DCMotor_SetDir(uint8_t motor, uint8_t dir){
     }
 }
 
-
-void TIM4_IRQHandler(void){
-    static int32_t speedError[2] = {0, 0};
-    static int32_t speedErrorIntegral[2] = {0, 0};
-    uint32_t driveValue[2] = {0, 0};
-
-    if(IS_BIT_SET(TIM4->SR, TIM_SR_UIF)){
-        // run control law if...
-        for(int i=0;i<2;i++){
-            // calculate error term
-            speedError[i] = (int32_t)setPoint[i] - (int32_t)(FEEDBACK_SCALE_FACTOR/Global_EncoderPeriod[i]); // swap (s32) with some data type to cast, make sure to set setpoint in DCMotor_setMotor
-
-            // check for stupid speed error
-            if ((speedError[i] < STUPID_SPEED_ERROR) && (speedError[i] > -STUPID_SPEED_ERROR)) {
-                // update integral term but only if drive is not on the rail
-                if ((((motorPWMvalue[i] == MIN_DRIVE_VALUE) && (speedError[i] > 0)) || ((motorPWMvalue[i] == MAX_DRIVE_VALUE) && (speedError[i] < 0))) || ((motorPWMvalue[i] > MIN_DRIVE_VALUE) && (motorPWMvalue[i] < MAX_DRIVE_VALUE))){
-                    speedErrorIntegral[i] += speedError[i];
-                }
-
-                // calculate the control law (NB: PI - no derivative term)
-                // This is ALL integer math.
-                driveValue[i] = ((speedError[i] * P_GAIN[i]) + (speedErrorIntegral[i] * I_GAIN[i])) / GAIN_DIVISOR[i];
-
-                /* limit the controller output to range of PWM */
-                if (driveValue[i] > MAX_DRIVE_VALUE){
-                    driveValue[i] = MAX_DRIVE_VALUE;
-                }
-                else if (driveValue[i] < MIN_DRIVE_VALUE) {
-                    driveValue[i] = MIN_DRIVE_VALUE;
-                }
-                /* Save the motor drive value for next time.
-                NB: This is where you write to the PWM hardware too */
-                motorPWMvalue[i] = (uint8_t)driveValue[i];
-                DCMotor_SetPWM(i, motorPWMvalue[i]);
-            } // if speedError not stupid
-
-        }
-
-        // clear the flag
-        CLEAR_BITS(TIM4->SR, TIM_SR_UIF);
+/*******************************************************************************
+* DCMotor_SetPWM()  - Sets the pwm for a DC motor.
+* motor             - The motor to set the pwm for.
+* dutyCycle         - The desired % of duty cycle for ON-time.
+* No return value.
+*******************************************************************************/
+void DCMotor_SetPWM(uint8_t motor, uint16_t pwm) {
+    if (pwm > MAX_DUTY_CYCLE) {
+        pwm = MAX_DUTY_CYCLE;
+    }
+    else if ((pwm > 0) && (pwm < MIN_DUTY_CYCLE)) {
+        pwm = MIN_DUTY_CYCLE;
     }
 
+    // Convert to ms ON-time
+    pwm *= 10;        // dutyCycle = (pwm * 1000) / 100
+
+    if(motor == DCMOTOR_LEFT){
+        FORCE_BITS(TIM8->CCR1, 0xFFFFUL, pwm);
+    }
+    else if(motor == DCMOTOR_RIGHT){
+        FORCE_BITS(TIM8->CCR2, 0xFFFFUL, pwm);
+    }
 }
+
+/*******************************************************************************
+* DCMotor_SetMotor()    - Set the pwm and direction of one motor.
+* dir                   - motor direction.
+* pwm              - desired motor pwm in cm/s.
+* No return value.
+*******************************************************************************/
+void DCMotor_SetMotor(uint8_t motor, uint8_t dir, uint16_t pwm){
+    DCMotor_SetDir(motor, dir);
+    DCMotor_SetPWM(motor, pwm);
+}
+
+/*******************************************************************************
+* DCMotor_SetMotors()   - Sets the pwm and direction of both motors.
+* leftDir               - Left motor direction.
+* leftDutyCycle         - Left motor duty cycle.
+* rightDir              - Right motor direction.
+* rightDutyCycle        - Right motor duty cycle.
+* No return value.
+*******************************************************************************/
+void DCMotor_SetMotors(uint8_t leftDir, uint16_t leftPWM, uint8_t rightDir, uint16_t rightPWM){
+    DCMotor_SetMotor(DCMOTOR_LEFT, leftDir, leftPWM);
+    DCMotor_SetMotor(DCMOTOR_RIGHT, rightDir, rightPWM);
+}
+
+/*******************************************************************************
+* DCMotor_Stop() - Stops both motors.
+* No inputs.
+* No return value.
+*******************************************************************************/
+void DCMotor_Stop(void){
+    DCMotor_SetMotors(DCMOTOR_STOP, 0, DCMOTOR_STOP, 0);
+}
+
+/*******************************************************************************
+* DCMotor_Forward() - Both motors spin forwards.
+* dutyCycle         - The desired % of duty cycle for ON-time.
+* No return value.
+*******************************************************************************/
+void DCMotor_Forward(uint16_t pwm){
+    DCMotor_SetMotors(DCMOTOR_FWD, pwm, DCMOTOR_FWD, pwm);
+}
+
+/*******************************************************************************
+* DCMotor_Backward()    - Both motors spin backwards.
+* dutyCycle             - The desired % of duty cycle for ON-time.
+* No return value.
+*******************************************************************************/
+void DCMotor_Backward(uint16_t pwm){
+    DCMotor_SetMotors(DCMOTOR_BWD, pwm, DCMOTOR_BWD, pwm);
+}
+

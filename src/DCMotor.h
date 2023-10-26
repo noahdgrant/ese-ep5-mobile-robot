@@ -16,24 +16,15 @@
 #define DCMOTOR_FWD     1UL
 #define DCMOTOR_BWD     2UL
 
-//Control Law Values
-#define DCMOTOR_PRIORITY        9
-#define FEEDBACK_SCALE_FACTOR   65536
-#define MAX_DRIVE_VALUE         100
-#define MIN_DRIVE_VALUE         50
-#define STUPID_SPEED_ERROR      100000
-extern uint8_t I_GAIN[2];
-extern uint8_t P_GAIN[2];
-extern uint8_t GAIN_DIVISOR[2];
-
-extern uint32_t Global_EncoderPeriod[2];
+#define MAX_DUTY_CYCLE         100
+#define MIN_DUTY_CYCLE         50
 
 void DCMotor_SetDir(uint8_t motor, uint8_t dir);
-void DCMotor_SetPWM(uint8_t motor, uint16_t dutyCycle);
+void DCMotor_SetPWM(uint8_t motor, uint16_t pwm);
 
 void DCMotor_Init(void);
-void DCMotor_SetMotor(uint8_t motor, uint8_t dir, uint16_t velocity);
-void DCMotor_SetMotors(uint8_t leftDir, uint16_t leftVelocity, uint8_t rightDir, uint16_t rightVelocity);
+void DCMotor_SetMotor(uint8_t motor, uint8_t dir, uint16_t pwm);
+void DCMotor_SetMotors(uint8_t leftDir, uint16_t leftSpeed, uint8_t rightDir, uint16_t rightSpeed);
 
 void DCMotor_Stop(void);
 void DCMotor_Forward(uint16_t velocity);
