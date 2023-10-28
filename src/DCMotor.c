@@ -24,9 +24,10 @@
 // (B)  0      0     1      1
 
 /*******************************************************************************
-*                               STATIC VARIABLES                               *
+*                               Global VARIABLES                               *
 *******************************************************************************/
-
+uint8_t DCMotorLeftDir = DCMOTOR_STOP;
+uint8_t DCMotorRightDir = DCMOTOR_STOP;
 
 /*******************************************************************************
 *                               PUBLIC FUNCTIONS                               *
@@ -180,6 +181,11 @@ void DCMotor_SetDir(uint8_t motor, uint8_t dir){
             SET_BITS(GPIOC->ODR, GPIO_ODR_9);
         }
     }
+}
+
+void DCMotor_SetDirs(uint8_t leftDir, uint8_t rightDir) {
+    DCMotor_SetDir(DCMOTOR_LEFT, leftDir);
+    DCMotor_SetDir(DCMOTOR_RIGHT, rightDir);
 }
 
 /*******************************************************************************

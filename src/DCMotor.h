@@ -19,7 +19,14 @@
 #define MAX_DUTY_CYCLE         100
 #define MIN_DUTY_CYCLE         50
 
+#define DCMOTOR_SPEED_INC 5
+#define DCMOTOR_SPEED_DEC 5
+
+extern uint8_t DCMotorLeftDir;
+extern uint8_t DCMotorRightDir;
+
 void DCMotor_SetDir(uint8_t motor, uint8_t dir);
+void DCMotor_SetDirs(uint8_t leftDir, uint8_t rightDir);
 void DCMotor_SetPWM(uint8_t motor, uint16_t pwm);
 
 void DCMotor_Init(void);

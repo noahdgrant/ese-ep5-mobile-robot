@@ -5,12 +5,13 @@
 * Description: Stepper motor control.
 *******************************************************************************/
 
-#include "stm32f303xe.h"
 #include "Stepper.h"
 #include "Utility.h"
 #include "UART.h"
 #include "LimitSwitch.h"
 
+
+volatile uint8_t StepperLastStep;    // The last step the servo took
 
 /*******************************************************************************
 *					    LOCAL CONSTANTS AND VARIABLES                          *
@@ -155,8 +156,8 @@ void Stepper_Step(uint8_t stepType){
 
 uint8_t Stepper_Range(void) {
     uint8_t rangeCount = 0;
-    extern volatile uint8_t StepperLastStep;    // The last step the servo took
-	StepperLastStep = 1;
+	
+    StepperLastStep = 1;
     while(StepperLastStep!=0){
         Stepper_Step(1);						// full step clock-wise
 		Delay_ms(5);
@@ -169,11 +170,11 @@ uint8_t Stepper_Range(void) {
 		Delay_ms(5);
     }
     
-
 	StepperLastStep = 0;
-    for(int i = 0; i< rangeCount/2;i++){
+    for(int i = 0; i < rangeCount/2; i++){
         Stepper_Step(1);
 		Delay_ms(5);
     }
+    
     return rangeCount;
 }

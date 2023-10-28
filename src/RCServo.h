@@ -10,6 +10,12 @@
 
 #include "../stm32-base/CMSIS/inc/stm32f303xe.h"
 
+#define SERVO_HOME -30
+#define SERVO_INCREASE 5
+#define SERVO_DECREASE 5
+
+extern int RCServoAngle;
+
 void RCServo_Init(void);
 int16_t RCServo_SetAngle(int16_t angle);
 
