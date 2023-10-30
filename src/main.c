@@ -49,6 +49,15 @@ int main(void) {
 	// PROGRAM LOOP
 	while(1) {
         switch(USART3_dequeue()){
+            // Stop robot
+            case 'S':{
+                StepperLastStep = STEPPER_STOP;
+                DCMotorLeftDir = DCMOTOR_STOP;
+                DCMotorRightDir = DCMOTOR_STOP;
+                leftEncoderSetpoint = 0;
+                rightEncoderSetpoint = 0;
+            }
+
             // Stepper
             case '0':{
                 StepperLastStep = STEPPER_CW_FULL_STEP;

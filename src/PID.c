@@ -20,14 +20,11 @@ static void PID_ControllerInit(PIDController *pid) {
 void PID_Init(void) {
     // Initialize PID controllers
     PIDController PIDLeftEncoder = {PID_L_KP, PID_L_KI, PID_LIM_MIN, PID_LIM_MAX,
-                                    PID_LIM_MIN_INT, PID_LIM_MAX_INT};
+                                    PID_LIM_MIN_INT, PID_LIM_MAX_INT, 0, 0, 0, 0};
 
     PIDController PIDRightEncoder = {PID_R_KP, PID_R_KI, PID_LIM_MIN, PID_LIM_MAX,
-                                    PID_LIM_MIN_INT, PID_LIM_MAX_INT};
+                                    PID_LIM_MIN_INT, PID_LIM_MAX_INT, 0, 0, 0, 0};
 
-    PID_ControllerInit(&PIDLeftEncoder);
-    PID_ControllerInit(&PIDRightEncoder);
-    
     // Configure TIM4 for PI control law
     SET_BITS(RCC->APB1ENR, RCC_APB1ENR_TIM4EN);         // Turn on Timer 4
     SET_BITS(TIM4->PSC, 71UL);                          // Set PSC so it counts in 1us
