@@ -56,6 +56,7 @@ int main(void) {
                 DCMotorRightDir = DCMOTOR_STOP;
                 leftEncoderSetpoint = 0;
                 rightEncoderSetpoint = 0;
+                break;
             }
 
             // Stepper
