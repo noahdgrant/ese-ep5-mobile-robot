@@ -11,7 +11,6 @@
 #include "Stepper.h"
 #include "RCServo.h"
 #include "LED.h"
-#include "PushButton.h"
 #include "KeyPad.h"
 #include "Ultrasonic.h"
 #include "DCMotor.h"
@@ -34,7 +33,6 @@ int main(void) {
 	DCMotor_Init();
 	LCD_Init();
 	Encoder_Init();
-    PushButton_Init();
 	LimitSwitch_Init();
     PID_Init();
 
@@ -143,11 +141,11 @@ int main(void) {
         }
 
         DCMotor_SetDirs(DCMotorLeftDir, DCMotorRightDir);
-        Stepper_Step(StepperLastStep);
-        RCServo_SetAngle(RCServoAngle);
+        //Stepper_Step(StepperLastStep);
+        //RCServo_SetAngle(RCServoAngle);
 
-        USART3_printf("Left: setpoint (cm/s) = %d, measurement (cm/s) = %d, period (us) = %d\n", leftEncoderSetpoint, leftEncoderSpeed, Global_EncoderPeriod[0]);
-        USART3_printf("Right: setpoint (cm/s) = %d, measurement (cm/s) = %d, period (us) = %d\n", rightEncoderSetpoint, rightEncoderSpeed, Global_EncoderPeriod[1]);
+        USART3_printf("Left: s = %d, m= %d, p = %d, pwm = %d\n", leftEncoderSetpoint, leftEncoderSpeed, Global_EncoderPeriod[LEFT], PIDLeftEncoder.out);
+        USART3_printf("Right: s = %d, m = %d, p = %d, pwm = %d\n", rightEncoderSetpoint, rightEncoderSpeed, Global_EncoderPeriod[RIGHT], PIDRightEncoder.out);
 	}
 }
 	

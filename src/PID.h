@@ -41,6 +41,9 @@ typedef struct {
 
 } PIDController;
 
+extern PIDController PIDLeftEncoder;
+extern PIDController PIDRightEncoder;
+
 void PID_Init(void);
 int PID_Update(PIDController *pid, int setpoint, int measurement, int deltaT);
 

@@ -98,7 +98,7 @@ void TIM2_IRQHandler(void){
 		leftEncoder[1] = leftEncoder[0];        // Timer count (us) at last interrupt
 		leftEncoder[0] = TIM2->CCR1;            // Timer count (us) at current interrupt
         Global_EncoderPeriod[0] = leftEncoder[0] - leftEncoder[1] + (overFlowCounter[0] * MAX_TIME_US);
-        leftEncoderSpeed = (UM_PER_VANE / Global_EncoderPeriod[0]) * 100; // um/us = m/s -> *100 = cm/s
+        leftEncoderSpeed = (UM_PER_VANE * 100) / Global_EncoderPeriod[0]; // um/us = m/s -> *100 = cm/s
         overFlowCounter[0] = 0;                 // left overflow counter
 	}
 	
@@ -107,7 +107,7 @@ void TIM2_IRQHandler(void){
 		rightEncoder[1] = rightEncoder[0];
 		rightEncoder[0] = TIM2->CCR2;
         Global_EncoderPeriod[1] = rightEncoder[0] - rightEncoder[1] + (overFlowCounter[1] * MAX_TIME_US);
-        leftEncoderSpeed = (UM_PER_VANE / Global_EncoderPeriod[0]) * 100; // um/us = m/s -> *100 = cm/s 
+        leftEncoderSpeed = (UM_PER_VANE * 100) / Global_EncoderPeriod[0]; // um/us = m/s -> *100 = cm/s 
         overFlowCounter[1] = 0;       // right overflow counter
 	}
 

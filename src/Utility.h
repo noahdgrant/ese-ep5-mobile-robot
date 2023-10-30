@@ -60,7 +60,8 @@
 #define ENABLE_GPIO_CLOCK(port)	ENABLE_GPIO_CLOCKx(port)
 #define ENABLE_GPIO_CLOCKx(port) RCC -> AHBENR |= RCC_AHBENR_GPIO ## port ## EN
 
-
+#define LEFT 0
+#define RIGHT 1
 /*******************************************************************************
 *								PUBLIC FUNCTIONS							   *
 *******************************************************************************/

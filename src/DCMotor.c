@@ -29,6 +29,7 @@
 uint8_t DCMotorLeftDir = DCMOTOR_STOP;
 uint8_t DCMotorRightDir = DCMOTOR_STOP;
 
+uint8_t DCMotorLastDir[2] = {DCMOTOR_STOP, DCMOTOR_STOP};
 /*******************************************************************************
 *                               PUBLIC FUNCTIONS                               *
 *******************************************************************************/
@@ -146,7 +147,7 @@ void DCMotor_SetDir(uint8_t motor, uint8_t dir){
     //          2 - backwards
 
     // Left motor
-    if(motor == DCMOTOR_LEFT){
+    if((motor == DCMOTOR_LEFT) && (DCMotorLastDir[LEFT] != dir)){
         // Left motor stop
         CLEAR_BITS(GPIOC->ODR, GPIO_ODR_12);
         CLEAR_BITS(GPIOC->ODR, GPIO_ODR_13);
@@ -162,9 +163,10 @@ void DCMotor_SetDir(uint8_t motor, uint8_t dir){
             CLEAR_BITS(GPIOC->ODR, GPIO_ODR_12);
             SET_BITS(GPIOC->ODR, GPIO_ODR_13);
         }
+        DCMotorLastDir[LEFT] = dir;
     }
     // Right motor
-    else if (motor == DCMOTOR_RIGHT){
+    else if ((motor == DCMOTOR_RIGHT) && (DCMotorLastDir[RIGHT] != dir)){
         // Right motor stop
         CLEAR_BITS(GPIOC->ODR, GPIO_ODR_8);
         CLEAR_BITS(GPIOC->ODR, GPIO_ODR_9);
@@ -180,6 +182,7 @@ void DCMotor_SetDir(uint8_t motor, uint8_t dir){
             CLEAR_BITS(GPIOC->ODR, GPIO_ODR_8);
             SET_BITS(GPIOC->ODR, GPIO_ODR_9);
         }
+        DCMotorLastDir[RIGHT] = dir;
     }
 }
 
