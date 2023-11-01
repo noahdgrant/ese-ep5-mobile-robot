@@ -47,8 +47,49 @@ int main(void) {
 	// PROGRAM LOOP
 	while(1) {
         switch(USART3_dequeue()){
+            case '0':{
+                USART3_printf("Forward");
+                break;
+            }
+            case '1':{
+                USART3_printf("Forward-Left");
+                break;
+            }
+            case '2':{
+                USART3_printf("Forward-Right");
+                break;
+            }
+            case '3':{
+                USART3_printf("Hard-Left");
+                break;
+            }
+            case '4':{
+                USART3_printf("Hard-Right");
+                break;
+            }
+            case '5':{
+                USART3_printf("Backwards");
+                break;
+            }
+            case '6':{
+                USART3_printf("Backward-Left");
+                break;
+            }
+            case '7':{
+                USART3_printf("Backward-Right");
+                break;
+            }
+            case '8':{
+                USART3_printf("Faster");
+                break;
+            }
+            case '9':{
+                USART3_printf("Slower");
+                break;
+            }
             // Stop robot
-            case 'S':{
+            case 'A':{
+                USART3_printf("Stop Moving");
                 StepperStep = STEPPER_STOP;
                 DCMotorLeftDir = DCMOTOR_STOP;
                 DCMotorRightDir = DCMOTOR_STOP;
@@ -56,6 +97,30 @@ int main(void) {
                 rightEncoderSetpoint = 0;
                 break;
             }
+            case 'B':{
+                USART3_printf("Center Cam");
+                break;
+            }
+            case 'C':{
+                USART3_printf("Pan Up");
+                break;
+            }
+            case 'D':{
+                USART3_printf("Pan Down");
+                break;
+            }
+            case 'E':{
+                USART3_printf("Pan Left");
+                break;
+            }
+            case 'F':{
+                USART3_printf("Pan Right");
+                break;
+            }
+            case 'G':{
+                USART3_printf("Stop");
+                break;
+            }/*
 
             // Stepper
             case '0':{
@@ -66,7 +131,7 @@ int main(void) {
                 StepperStep = STEPPER_CCW_FULL_STEP;
                 break;
             }
-            case '2':{
+            case 'G':{
                 StepperStep = STEPPER_STOP;
                 break;
             }
@@ -137,7 +202,7 @@ int main(void) {
                 USART3_printf("User Input: 5");
                 USART3_printf("\nUltrasonic: %dcm", Ultra_ReadSensor());
                 break;
-            }
+            }*/
 
             // Invalid command
             default: {
@@ -149,8 +214,8 @@ int main(void) {
         Stepper_Step(StepperStep);
         RCServo_SetAngle(RCServoAngle);
 
-        USART3_printf("Left: s = %d, m= %d, p = %d, pwm = %d\n", leftEncoderSetpoint, leftEncoderSpeed, Global_EncoderPeriod[LEFT], PIDLeftEncoder.out);
-        USART3_printf("Right: s = %d, m = %d, p = %d, pwm = %d\n", rightEncoderSetpoint, rightEncoderSpeed, Global_EncoderPeriod[RIGHT], PIDRightEncoder.out);
+        //USART3_printf("Left: s = %d, m= %d, p = %d, pwm = %d\n", leftEncoderSetpoint, leftEncoderSpeed, Global_EncoderPeriod[LEFT], PIDLeftEncoder.out);
+        //USART3_printf("Right: s = %d, m = %d, p = %d, pwm = %d\n", rightEncoderSetpoint, rightEncoderSpeed, Global_EncoderPeriod[RIGHT], PIDRightEncoder.out);
 	}
 }
 	
