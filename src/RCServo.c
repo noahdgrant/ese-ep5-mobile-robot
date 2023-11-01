@@ -10,7 +10,7 @@
 /*******************************************************************************
 *						        GLOBAL VARIABLES    						   *
 *******************************************************************************/
-int RCServoAngle = 0;
+int RCServoAngle = SERVO_HOME;
 
 /*******************************************************************************
 *						LOCAL CONSTANTS AND VARIABLES						   *
@@ -20,7 +20,7 @@ int RCServoAngle = 0;
 #define SERVO_POS_LMT 1950		// Servo positive mechanical limit pulse width (us)
 #define US_PER_DEGREE 10		// Servo us/degree pulse width ratio
 
-static int RCServoLastAngle = SERVO_HOME;
+static int RCServoLastAngle = 0;
 
 /*******************************************************************************
 *						    PUBLIC FUNCTIONS								   *

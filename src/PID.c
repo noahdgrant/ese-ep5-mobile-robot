@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 
+#include "DCMotor.h"
 #include "PID.h"
 
 // Code based on: 
@@ -18,14 +19,14 @@
 *******************************************************************************/
 #define PID_PRIORITY 9
 
-#define PID_L_KP 3
-#define PID_L_KI 0
-#define PID_R_KP 3
-#define PID_R_KI 0
-#define PID_LIM_MIN 0           // PWM
-#define PID_LIM_MAX 100         // PWM
-#define PID_LIM_MIN_INT 0       // PWM
-#define PID_LIM_MAX_INT 100     // PWM
+#define PID_L_KP 10
+#define PID_L_KI 1
+#define PID_R_KP 10 
+#define PID_R_KI 1
+#define PID_LIM_MIN MIN_DUTY_CYCLE
+#define PID_LIM_MAX MAX_DUTY_CYCLE
+#define PID_LIM_MIN_INT MIN_DUTY_CYCLE
+#define PID_LIM_MAX_INT MAX_DUTY_CYCLE
 
 /*******************************************************************************
 *                               GLOBAL VARIABLES                               *
@@ -78,7 +79,7 @@ int PID_Update(PIDController *pid, int setpoint, int measurement, int deltaT) {
 
     
     // Integrator
-    pid->integrator = pid->integrator + (error * deltaT)/1000; // (pid->Ki * pid->deltaT * (error + pid->prevError)) / 2;
+    pid->integrator = pid->integrator + (error * deltaT)/1000;
 
 	// Anti-wind-up via integrator clamping
     if (pid->integrator > pid->limMaxInt) {
@@ -100,10 +101,6 @@ int PID_Update(PIDController *pid, int setpoint, int measurement, int deltaT) {
     }
 
     
-    // Store error and measurement for later use
-    //pid->prevError = error;
-
-	
     // Return controller output
     return pid->out;
 }

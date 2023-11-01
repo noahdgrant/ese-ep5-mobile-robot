@@ -138,6 +138,11 @@ int main(void) {
                 USART3_printf("\nUltrasonic: %dcm", Ultra_ReadSensor());
                 break;
             }
+
+            // Invalid command
+            default: {
+                break;
+            }
         }
 
         DCMotor_SetDirs(DCMotorLeftDir, DCMotorRightDir);

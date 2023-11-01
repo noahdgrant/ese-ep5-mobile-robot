@@ -17,7 +17,7 @@
 #define DCMOTOR_BWD     2UL
 
 #define MAX_DUTY_CYCLE         100
-#define MIN_DUTY_CYCLE         50
+#define MIN_DUTY_CYCLE         0
 
 #define DCMOTOR_SPEED_INC 2
 #define DCMOTOR_SPEED_DEC 2

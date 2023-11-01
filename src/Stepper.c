@@ -136,10 +136,10 @@ uint8_t Stepper_Range(void) {
 		Delay_ms(5);
     }
 
-	StepperStep = STEPPER_CCW_HALF_STEP;
+	StepperStep = STEPPER_CCW_FULL_STEP;
     while(StepperStep != 0){
         rangeCount++;
-        Stepper_Step(STEPPER_CCW_HALF_STEP);
+        Stepper_Step(STEPPER_CCW_FULL_STEP);
 		Delay_ms(5);
     }
     
