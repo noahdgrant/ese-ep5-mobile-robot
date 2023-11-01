@@ -11,23 +11,17 @@
 #include "Stepper.h"
 #include "RCServo.h"
 #include "LED.h"
-#include "PushButton.h"
 #include "KeyPad.h"
 #include "Ultrasonic.h"
 #include "DCMotor.h"
 #include "LCD.h"
 #include "Encoder.h"
 #include "LimitSwitch.h"
-volatile uint8_t StepperLastStep = 0;	// The last step the stepper took
+#include "PID.h"
 
 int main(void) {	
 	// INITIALIZE
-
-	int8_t RCServoAngle = 0;			// Servo angle
-	uint8_t StepperMode = 0;			// Stepper mode (continuous or single output)
-
-	
-	System_Clock_Init();				// Scale clock speed to 72MHz
+	System_Clock_Init();
 	SystemCoreClockUpdate();
 	
 	USART3_Init();
@@ -39,153 +33,124 @@ int main(void) {
 	DCMotor_Init();
 	LCD_Init();
 	Encoder_Init();
-    PushButton_Init();
 	LimitSwitch_Init();
+    PID_Init();
 
 	Stepper_Range();
-    RCServo_SetAngle(-30);
+    RCServo_SetAngle(SERVO_HOME);
 	
-	// Print menu
+	// Startup menu
 	USART3_printf("--- Engineering Project 5 Mobile Robot ---\n");
-	USART3_printf("Press a key on the keypad\n");
+	USART3_printf("Robot initialized...\n");
+
 
 	// PROGRAM LOOP
-	while(1){
-		switch(USART3_dequeue()){
-			// STEPPER
-			// OFF
-			case '0':{
-				USART3_printf("User Input: 0");
-				USART3_printf("\nStepper Off");
+	while(1) {
+        switch(USART3_dequeue()){
+            // Stop robot
+            case 'S':{
+                StepperStep = STEPPER_STOP;
+                DCMotorLeftDir = DCMOTOR_STOP;
+                DCMotorRightDir = DCMOTOR_STOP;
+                leftEncoderSetpoint = 0;
+                rightEncoderSetpoint = 0;
+                break;
+            }
 
-				StepperLastStep = 0;
-				Stepper_Step(0);
-				break;
-			}
-			// Full step CW
-			case '1':{
-				USART3_printf("User Input: 1");
-				USART3_printf("\nFull Step CW");
+            // Stepper
+            case '0':{
+                StepperStep = STEPPER_CW_FULL_STEP;
+                break;
+            }
+            case '1':{
+                StepperStep = STEPPER_CCW_FULL_STEP;
+                break;
+            }
+            case '2':{
+                StepperStep = STEPPER_STOP;
+                break;
+            }
 
-				StepperLastStep = 1;
-				Stepper_Step(1);
-				break;
-			}
-			// Full step CCW
-			case '2':{
-				USART3_printf("User Input: 2");
-				USART3_printf("\nFull Step CCW");
-				StepperLastStep = 2;
-				Stepper_Step(2);
-				break;
-			}
-			// Half step CW
-			case '3':{
-				USART3_printf("User Input: 3");
-				USART3_printf("\nHalf Step CW");
-				StepperLastStep = 3;
-				Stepper_Step(3);
-				break;
-			}
-			// Half step CCW
-			case '4':{
-				USART3_printf("User Input: 4");
-				USART3_printf("\nHalf Step CCW");
-				StepperLastStep = 4;
-				Stepper_Step(4);
-				break;
-			}
-			// ping ultrasonic
-			case '5':{
-				Ultra_StartTrigger();
-				while(!Ultra_EchoRx());
-				USART3_printf("User Input: 5");
-				USART3_printf("\nUltrasonic: %dcm", Ultra_ReadSensor());
-				break;
-			}
-			// 
-			case '6':{
-				USART3_printf("User Input: 6");
-				USART3_printf("\nIt's a button.");
-				break;
-			}
-			// SERVO
-			// Decrease servo angle
-			case '7':{
-				USART3_printf("User Input: 7");
-				USART3_printf("\nDec Servo Angle");
-				RCServoAngle -= 5;
-				RCServo_SetAngle(RCServoAngle);
-				break;
-			}
-			// Centre servo
-			case '8':{
-				USART3_printf("User Input: 8");
-				USART3_printf("\nCentre Servo");
-				RCServoAngle = -30;
-				RCServo_SetAngle(RCServoAngle);
-				break;
-			}
-			// Increase servo angle
-			case '9':{
-				USART3_printf("User Input: 9");
-				USART3_printf("\nInc Servo Angle");
-				RCServoAngle += 5;
-				RCServo_SetAngle(RCServoAngle);
-				break;
-			}
-			// Toggle between continuous output mode or single output mode
-			case '#':{
-				USART3_printf("User Input: #");
-				USART3_printf("\nToggle Mode");
-				if(StepperMode == 1){
-					StepperMode = 0;
-				}
-				else{
-					StepperMode = 1;
-				}
-				break;
-			}
-			// LED
-			case '*':{
-				USART3_printf("User Input: *");
-				USART3_printf("\nToggle LED");
-				LED_Toggle();
-				break;
-			}
-			// dc motors forward
-			case 'A':{
-				USART3_printf("User Input: A");
-				USART3_printf("\nDC Forward");
-				DCMotor_Forward(100);
-				break;
-			}
-			// dc motors off
-			case 'B':{
-				USART3_printf("User Input: B");
-				USART3_printf("\nDC Stop");
-				DCMotor_Stop();
-				break;
-			}
-			// dc motors backwards 
-			case 'C':{
-				USART3_printf("User Input: C");
-				USART3_printf("\nDC Backward");
-				DCMotor_Backward(100);
-				break;
-			}
-			// check encoder values
-			case 'D':{
-				Encoder_CalculateSpeed();
-				USART3_printf("User Input: D");
-				USART3_printf("\nL: %d R: %d", Global_LeftEncoderPeriod, Global_RightEncoderPeriod);
-				break;
-			}
-		}
-		
-		// Stepper continuous output mode
-		if(StepperMode){
-			Stepper_Step(StepperLastStep);
-		}
+            // Servo
+            case '3':{
+                RCServoAngle -= SERVO_DECREASE;
+                break;
+            }
+            case '4':{
+                RCServoAngle += SERVO_INCREASE;
+                break;
+            }
+            case '5':{
+                RCServoAngle = SERVO_HOME;
+                break;
+            }
+            
+            // DC motors
+            case '6':{
+                DCMotorLeftDir = DCMOTOR_FWD;
+                DCMotorRightDir = DCMOTOR_FWD;
+                break;
+            }
+            case '7':{
+                DCMotorLeftDir = DCMOTOR_BWD;
+                DCMotorRightDir = DCMOTOR_BWD;
+                break;
+            }
+            case '8':{
+                DCMotorLeftDir = DCMOTOR_STOP;
+                DCMotorRightDir = DCMOTOR_FWD;
+                break;
+            }
+            case '9':{
+                DCMotorLeftDir = DCMOTOR_STOP;
+                DCMotorRightDir = DCMOTOR_FWD;
+                break;
+            }
+            case 'q':{
+                DCMotorLeftDir = DCMOTOR_STOP;
+                DCMotorRightDir = DCMOTOR_STOP;
+                break;
+            }
+
+            // Speed
+            case 'w': {
+                leftEncoderSetpoint += DCMOTOR_SPEED_INC;
+                break;
+            }
+            case 'e': {
+                leftEncoderSetpoint -= DCMOTOR_SPEED_DEC;
+                break;
+            }
+            case 'r': {
+                rightEncoderSetpoint += DCMOTOR_SPEED_INC;
+                break;
+            }
+            case 't': {
+                rightEncoderSetpoint -= DCMOTOR_SPEED_DEC;
+                break;
+            }
+
+            // Ultrasonic
+            case 'A':{
+                Ultra_StartTrigger();
+                while(!Ultra_EchoRx());
+                USART3_printf("User Input: 5");
+                USART3_printf("\nUltrasonic: %dcm", Ultra_ReadSensor());
+                break;
+            }
+
+            // Invalid command
+            default: {
+                break;
+            }
+        }
+
+        DCMotor_SetDirs(DCMotorLeftDir, DCMotorRightDir);
+        Stepper_Step(StepperStep);
+        RCServo_SetAngle(RCServoAngle);
+
+        USART3_printf("Left: s = %d, m= %d, p = %d, pwm = %d\n", leftEncoderSetpoint, leftEncoderSpeed, Global_EncoderPeriod[LEFT], PIDLeftEncoder.out);
+        USART3_printf("Right: s = %d, m = %d, p = %d, pwm = %d\n", rightEncoderSetpoint, rightEncoderSpeed, Global_EncoderPeriod[RIGHT], PIDRightEncoder.out);
 	}
 }
+	

@@ -9,6 +9,16 @@
 #define __Stepper_H
 
 #include "../stm32-base/CMSIS/inc/stm32f303xe.h"
+#include "Utility.h"
+#include "UART.h"
+
+#define STEPPER_STOP 0
+#define STEPPER_CW_FULL_STEP 1
+#define STEPPER_CCW_FULL_STEP 2
+#define STEPPER_CW_HALF_STEP 3
+#define STEPPER_CCW_HALF_STEP 4
+
+extern volatile uint8_t StepperStep;
 
 void Stepper_Init(void);
 void Stepper_Step(uint8_t stepType);

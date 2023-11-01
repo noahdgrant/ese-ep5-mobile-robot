@@ -6,25 +6,36 @@
 *******************************************************************************/
 
 #ifndef DCMOTOR_H
-#define	 DCMOTOR_H
+#define	DCMOTOR_H
 
 #include "../stm32-base/CMSIS/inc/stm32f303xe.h"
 
-#define DCMOTOR_LEFT 0UL
+#define DCMOTOR_LEFT    0UL
 #define DCMOTOR_RIGHT	1UL
-#define DCMOTOR_STOP 0UL
-#define DCMOTOR_FWD	1UL
-#define DCMOTOR_BWD	2UL
+#define DCMOTOR_STOP    0UL
+#define DCMOTOR_FWD     1UL
+#define DCMOTOR_BWD     2UL
+
+#define MAX_DUTY_CYCLE         100
+#define MIN_DUTY_CYCLE         0
+
+#define DCMOTOR_SPEED_INC 2
+#define DCMOTOR_SPEED_DEC 2
+
+extern uint8_t DCMotorLeftDir;
+extern uint8_t DCMotorRightDir;
+
+void DCMotor_SetDir(uint8_t motor, uint8_t dir);
+void DCMotor_SetDirs(uint8_t leftDir, uint8_t rightDir);
+void DCMotor_SetPWM(uint8_t motor, uint16_t pwm);
 
 void DCMotor_Init(void);
-void DCMotor_SetSpeed(uint8_t motor, uint16_t dutyCycle);
-void DCMotor_SetDir(uint8_t motor, uint8_t dir);
-void DCMotor_SetMotor(uint8_t motor, uint8_t dir, uint16_t dutyCycle);
-void DCMotor_SetMotors(uint8_t leftDir, uint16_t leftDutyCycle, uint8_t rightDir, uint16_t rightDutyCycle);
+void DCMotor_SetMotor(uint8_t motor, uint8_t dir, uint16_t pwm);
+void DCMotor_SetMotors(uint8_t leftDir, uint16_t leftSpeed, uint8_t rightDir, uint16_t rightSpeed);
 
 void DCMotor_Stop(void);
-void DCMotor_Forward(uint16_t dutyCycle);
-void DCMotor_Backward(uint16_t dutyCycle);
+void DCMotor_Forward(uint16_t velocity);
+void DCMotor_Backward(uint16_t velocity);
 
 // Not implemented
 void DCMotor_TurnLeft(void);

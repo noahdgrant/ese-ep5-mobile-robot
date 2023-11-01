@@ -5,25 +5,21 @@
 * Description: Stepper motor control.
 *******************************************************************************/
 
-#include "stm32f303xe.h"
 #include "Stepper.h"
-#include "Utility.h"
-#include "UART.h"
-#include "LimitSwitch.h"
 
+/*******************************************************************************
+*					          GLOBAL VARIABLES                                 *
+*******************************************************************************/
+volatile uint8_t StepperStep = STEPPER_STOP;
 
 /*******************************************************************************
 *					    LOCAL CONSTANTS AND VARIABLES                          *
 *******************************************************************************/
-
 static uint8_t stepCounter = 0xFF;		// Stepper motor pattern counter (only care about the 3 LSBs)
-static int8_t lastStep = 0;				// Last valid step incrament
-static uint8_t lastStepType = 0;		// Last valid step type
 
 /*******************************************************************************
 *					        	PRIVATE FUNCTIONS							   *
 *******************************************************************************/
-
 /*******************************************************************************
 * stepper_output() - Updates the output of GPIOC pins PC0-PC3.
 * stepPattern		- Binary step pattern to ouput.
@@ -64,7 +60,6 @@ static void Stepper_Ouput(uint8_t stepPattern){
 /*******************************************************************************
 *						        PUBLIC FUNCTIONS							   *
 *******************************************************************************/
-
 /*******************************************************************************
 * stepper_init() - Initialize GPIOC pins PC0-PC3.
 * No inputs.
@@ -105,75 +100,54 @@ void Stepper_Step(uint8_t stepType){
 	uint8_t stepPatterns[] = {0x8, 0xA, 0x2, 0x6, 0x4, 0x5, 0x1, 0x9};		// The different possible binary step patterns
 	
 	switch(stepType){
-		// Turn motor OFF
-		case 0: {
-			Stepper_Ouput(stepPatterns[0x7 & stepCounter]);	
-			lastStepType = 0;
-			lastStep = 0;
+		case STEPPER_STOP: {
 			break;
 		}
-		// Full-step clockwise
-		case 1:{
+		case STEPPER_CW_FULL_STEP:{
             stepCounter += 2;
-    	    Stepper_Ouput(stepPatterns[0x7 & stepCounter]);		// & with 0x7 because we just want the lower 3 bits
-            lastStepType = 1;
-            lastStep = 2;
 			break;
 		}
-		// Full-step counter-clockwise
-		case 2:{
+		case STEPPER_CCW_FULL_STEP:{
             stepCounter -= 2;
-            Stepper_Ouput(stepPatterns[0x7 & stepCounter]);		// & with 0x7 because we just want the lower 3 bits
-            lastStepType = 2;
-            lastStep = -2;
 			break;
 		}
-		// Half-step clockwise
-		case 3:{
+		case STEPPER_CW_HALF_STEP:{
             stepCounter++;
-            Stepper_Ouput(stepPatterns[0x7 & stepCounter]);		// & with 0x7 because we just want the lower 3 bits
-            lastStepType = 3;
-            lastStep = 1;
 			break;
 		}
-		// Half-step counter-clockwise
-		case 4:{
+		case STEPPER_CCW_HALF_STEP:{
             stepCounter--;
-            Stepper_Ouput(stepPatterns[0x7 & stepCounter]);		// & with 0x7 because we just want the lower 3 bits
-            lastStepType = 4;
-            lastStep = -1;
 			break;
 		}
-		// Repeat last valid input if bad value is passed to the funciton
 		default:{
-			stepCounter += lastStep;
-			Stepper_Ouput(stepPatterns[0x7 & stepCounter]);		// & with 0x7 because we just want the lower 3 bits
-			break;
+			return;
 		}
 	}
+
+    Stepper_Ouput(stepPatterns[0x7 & stepCounter]);		// & with 0x7 because we just want the lower 3 bits
 }
 
 uint8_t Stepper_Range(void) {
     uint8_t rangeCount = 0;
-    extern volatile uint8_t StepperLastStep;    // The last step the servo took
-	StepperLastStep = 1;
-    while(StepperLastStep!=0){
-        Stepper_Step(1);						// full step clock-wise
+	
+    StepperStep = STEPPER_CW_FULL_STEP;
+    while(StepperStep != 0){
+        Stepper_Step(STEPPER_CW_FULL_STEP);
 		Delay_ms(5);
     }
 
-	StepperLastStep = 4;
-    while(StepperLastStep!=0){
+	StepperStep = STEPPER_CCW_FULL_STEP;
+    while(StepperStep != 0){
         rangeCount++;
-        Stepper_Step(2);						// half step counter clock-wise
+        Stepper_Step(STEPPER_CCW_FULL_STEP);
 		Delay_ms(5);
     }
     
-
-	StepperLastStep = 0;
-    for(int i = 0; i< rangeCount/2;i++){
-        Stepper_Step(1);
+	StepperStep = STEPPER_STOP;
+    for(int i = 0; i < rangeCount/2; i++){
+        Stepper_Step(STEPPER_CW_FULL_STEP);
 		Delay_ms(5);
     }
+    
     return rangeCount;
 }

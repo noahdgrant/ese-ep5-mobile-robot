@@ -7,22 +7,23 @@
 
 #include "Encoder.h"
 
-
 /*******************************************************************************
 *								GLOBAL VARIABLES							   *
 *******************************************************************************/
 
-uint32_t Global_LeftEncoderPeriod = 0;
-uint32_t Global_RightEncoderPeriod = 0;
-
+volatile uint32_t Global_EncoderPeriod[2] = {0, 0};     // [0] = left, [1] = right
+volatile uint8_t overFlowCounter[2] = {0, 0};           // [0] = left, [1] = right
+volatile uint32_t leftEncoderSpeed = 0;
+volatile uint32_t rightEncoderSpeed = 0;
+int leftEncoderSetpoint = 0;
+int rightEncoderSetpoint = 0;
 
 /*******************************************************************************
 *								STATIC VARIABLES							   *
 *******************************************************************************/
 
-static uint32_t leftEncoder[2] = {0, 0};		// [0] = current, [1] = previous
-static uint32_t rightEncoder[2] = {0, 0};		// [0] = current, [1] = previous
-
+static volatile uint32_t leftEncoder[2] = {0, 0};		// [0] = current, [1] = previous
+static volatile uint32_t rightEncoder[2] = {0, 0};		// [0] = current, [1] = previous
 
 /*******************************************************************************
 *						    	PUBLIC FUNCTIONS							   *
@@ -54,8 +55,11 @@ void Encoder_Init(void){
 		// 1us = (Prescaler + 1) / 72MHz
 		// (Prescaler + 1) = 72
 		// Prescaler = 71
+    SET_BITS(TIM2->ARR, 0xFFFFUL);
+
 	CLEAR_BITS(TIM2->CR1, TIM_CR1_DIR);				// Set counting direction to upcounting
-	
+    CLEAR_BITS(TIM2->CR1, TIM_CR1_URS);			    // Enable update
+    CLEAR_BITS(TIM2->CR1, TIM_CR1_UDIS);            // Set update request source
 	
 	// Configure TIM2 CH1 for input capture on Left Encoder
 	SET_BITS(TIM2->CCMR1, TIM_CCMR1_CC1S_0);						// Input capture mode for CH1 (normal mode  0%01)
@@ -74,8 +78,9 @@ void Encoder_Init(void){
 	// Configure TIM2 to generate interrupts and configure NVIC to respond
 	SET_BITS(TIM2->DIER, TIM_DIER_CC1IE);						    // Enable encoder CH1 to trigger IRQ
 	SET_BITS(TIM2->DIER, TIM_DIER_CC2IE);						    // Enable encoder CH2 to trigger IRQ
-	NVIC_EnableIRQ(TIM2_IRQn);									    // Enable TIM2 IRQ (TIM2_IRQn) in NVIC
-	NVIC_SetPriority(TIM2_IRQn, ENCODER_PRIORITY);	// Set NVIC priority
+    SET_BITS(TIM2->DIER, TIM_DIER_UIE);						        // Enable timer overflow to trigger IRQ
+	NVIC_EnableIRQ(TIM2_IRQn);							            // Enable TIM2 IRQ (TIM2_IRQn) in NVIC
+	NVIC_SetPriority(TIM2_IRQn, ENCODER_PRIORITY);	                // Set NVIC priority
 	 
 	// Start TIM2 CH1 and CH2 Input Captures
 	SET_BITS(TIM2->EGR, TIM_EGR_UG);						        // Force an update event to preload all the registers
@@ -89,28 +94,28 @@ void Encoder_Init(void){
 *******************************************************************************/
 void TIM2_IRQHandler(void){
 	// Left wheel interrupt
-	if(IS_BIT_SET(TIM2->SR, TIM_SR_CC1IF)){
-		leftEncoder[1] = leftEncoder[0];
-		leftEncoder[0] = TIM2->CCR1;
+	if(IS_BIT_SET(TIM2->SR, TIM_SR_CC1IF)) {
+		leftEncoder[1] = leftEncoder[0];        // Timer count (us) at last interrupt
+		leftEncoder[0] = TIM2->CCR1;            // Timer count (us) at current interrupt
+        Global_EncoderPeriod[LEFT] = leftEncoder[0] - leftEncoder[1] + (overFlowCounter[LEFT] * MAX_TIME_US);
+        leftEncoderSpeed = (UM_PER_VANE * 100) / Global_EncoderPeriod[LEFT]; // um/us = m/s -> *100 = cm/s
+        overFlowCounter[0] = 0;                 // left overflow counter
 	}
 	
 	// Right wheel interrupt
 	if(IS_BIT_SET(TIM2->SR, TIM_SR_CC2IF)){
 		rightEncoder[1] = rightEncoder[0];
 		rightEncoder[0] = TIM2->CCR2;
-	}	
+        Global_EncoderPeriod[RIGHT] = rightEncoder[0] - rightEncoder[1] + (overFlowCounter[RIGHT] * MAX_TIME_US);
+        rightEncoderSpeed = (UM_PER_VANE * 100) / Global_EncoderPeriod[RIGHT]; // um/us = m/s -> *100 = cm/s 
+        overFlowCounter[1] = 0;       // right overflow counter
+	}
+
+    // Timer overflow
+    if(IS_BIT_SET(TIM2->SR, TIM_SR_UIF)){
+        overFlowCounter[0]++;       // left overflow counter
+        overFlowCounter[1]++;       // right overflow counter
+        CLEAR_BITS(TIM2->SR, TIM_SR_UIF);
+    }
 }
 
-/*******************************************************************************
-* Encoder_CalculateSpeed() - Calculates the speed of each encoder in us/vane
-* No inputs.
-* No return value.
-*******************************************************************************/
-void Encoder_CalculateSpeed(void){
-	Global_LeftEncoderPeriod = leftEncoder[0] - leftEncoder[1];			// Calculate encoder period (current - previous)
-	leftEncoder[1] = leftEncoder[0] = 0;								// Update previous measurement to current measurement
-	
-	Global_RightEncoderPeriod = rightEncoder[0] - rightEncoder[1];		// Calculate encoder period
-	rightEncoder[1] = rightEncoder[0] = 0;								// Update previous measurement to current measurement
-
-}
