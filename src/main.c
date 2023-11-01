@@ -19,66 +19,36 @@
 #include "LimitSwitch.h"
 #include "PID.h"
 
-int main(void) {	
-	// INITIALIZE
-	System_Clock_Init();
-	SystemCoreClockUpdate();
-	
-	USART3_Init();
-	Stepper_Init();
-	RCServo_Init();
-	LED_Init();
-	KeyPad_Init();
-	Ultra_Init();
-	DCMotor_Init();
-	LCD_Init();
-	Encoder_Init();
-	LimitSwitch_Init();
+int main(void) {
+    // INITIALIZE
+    System_Clock_Init();
+    SystemCoreClockUpdate();
+
+    USART3_Init();
+    Stepper_Init();
+    RCServo_Init();
+    LED_Init();
+    KeyPad_Init();
+    Ultra_Init();
+    DCMotor_Init();
+    LCD_Init();
+    Encoder_Init();
+    LimitSwitch_Init();
     PID_Init();
 
-	Stepper_Range();
+    Stepper_Range();
     RCServo_SetAngle(SERVO_HOME);
-	
-	// Startup menu
-	USART3_printf("--- Engineering Project 5 Mobile Robot ---\n");
-	USART3_printf("Robot initialized...\n");
+
+    // Startup menu
+    USART3_printf("--- Engineering Project 5 Mobile Robot ---\n");
+    USART3_printf("Robot initialized...\n");
 
 
-	// PROGRAM LOOP
-	while(1) {
+    // PROGRAM LOOP
+    while(1) {
         switch(USART3_dequeue()){
-            case '0':{  //Forward
-                break;
-            }
-            case '1':{  //Forward-Left
-                break;
-            }
-            case '2':{  //Forward-Right
-                break;
-            }
-            case '3':{  //Hard-Left
-                break;
-            }
-            case '4':{  //Hard-Right
-                break;
-            }
-            case '5':{  //Backwards
-                break;
-            }
-            case '6':{  //Backward-Left
-                break;
-            }
-            case '7':{  //Backward-Right
-                break;
-            }
-            case '8':{  //Faster
-                break;
-            }
-            case '9':{  //Slower
-                break;
-            }
             // Stop robot
-            case 'A':{  //Stop Moving
+            case 'S':{
                 StepperStep = STEPPER_STOP;
                 DCMotorLeftDir = DCMOTOR_STOP;
                 DCMotorRightDir = DCMOTOR_STOP;
@@ -86,76 +56,52 @@ int main(void) {
                 rightEncoderSetpoint = 0;
                 break;
             }
-            case 'B':{  //Center Cam
-                Stepper_Range();
-                RCServoAngle = SERVO_HOME;
-                break;
-            }
-            case 'C':{  //Pan Up
-                RCServoAngle += SERVO_INCREASE;
-                break;
-            }
-            case 'D':{  //Pan Down
-                break;
-            }
-            case 'E':{  //Pan Left
-                StepperStep = STEPPER_CCW_FULL_STEP;
-                break;
-            }
-            case 'F':{  // Pan Right
-                StepperStep = STEPPER_CW_FULL_STEP;
-                break;
-            }
-            case 'G':{  //Stop
-                StepperStep = STEPPER_STOP;
-                break;
-            }/*
 
-            // Stepper
-            case '0':{
+                // Stepper
+            case '0':{  // ljs N
                 StepperStep = STEPPER_CW_FULL_STEP;
                 break;
             }
-            case '1':{
+            case '1':{  // ljs NW
                 StepperStep = STEPPER_CCW_FULL_STEP;
                 break;
             }
-            case 'G':{
+            case '2':{  // ljs NE
                 StepperStep = STEPPER_STOP;
                 break;
             }
 
-            // Servo
-            case '3':{
+                // Servo
+            case '3':{  // ljs W
                 RCServoAngle -= SERVO_DECREASE;
                 break;
             }
-            case '4':{
+            case '4':{  // ljs E
                 RCServoAngle += SERVO_INCREASE;
                 break;
             }
-            case '5':{
+            case '5':{  // ljs S
                 RCServoAngle = SERVO_HOME;
                 break;
             }
-            
-            // DC motors
-            case '6':{
+
+                // DC motors
+            case '6':{  // ljs SW
                 DCMotorLeftDir = DCMOTOR_FWD;
                 DCMotorRightDir = DCMOTOR_FWD;
                 break;
             }
-            case '7':{
+            case '7':{  // ljs SE
                 DCMotorLeftDir = DCMOTOR_BWD;
                 DCMotorRightDir = DCMOTOR_BWD;
                 break;
             }
-            case '8':{
+            case '8':{  // ZR
                 DCMotorLeftDir = DCMOTOR_STOP;
                 DCMotorRightDir = DCMOTOR_FWD;
                 break;
             }
-            case '9':{
+            case '9':{  // ZL
                 DCMotorLeftDir = DCMOTOR_STOP;
                 DCMotorRightDir = DCMOTOR_FWD;
                 break;
@@ -166,7 +112,7 @@ int main(void) {
                 break;
             }
 
-            // Speed
+                // Speed
             case 'w': {
                 leftEncoderSetpoint += DCMOTOR_SPEED_INC;
                 break;
@@ -184,16 +130,16 @@ int main(void) {
                 break;
             }
 
-            // Ultrasonic
+                // Ultrasonic
             case 'A':{
                 Ultra_StartTrigger();
                 while(!Ultra_EchoRx());
                 USART3_printf("User Input: 5");
                 USART3_printf("\nUltrasonic: %dcm", Ultra_ReadSensor());
                 break;
-            }*/
+            }
 
-            // Invalid command
+                // Invalid command
             default: {
                 break;
             }
@@ -203,8 +149,7 @@ int main(void) {
         Stepper_Step(StepperStep);
         RCServo_SetAngle(RCServoAngle);
 
-        //USART3_printf("Left: s = %d, m= %d, p = %d, pwm = %d\n", leftEncoderSetpoint, leftEncoderSpeed, Global_EncoderPeriod[LEFT], PIDLeftEncoder.out);
-        //USART3_printf("Right: s = %d, m = %d, p = %d, pwm = %d\n", rightEncoderSetpoint, rightEncoderSpeed, Global_EncoderPeriod[RIGHT], PIDRightEncoder.out);
-	}
+        USART3_printf("Left: s = %d, m= %d, p = %d, pwm = %d\n", leftEncoderSetpoint, leftEncoderSpeed, Global_EncoderPeriod[LEFT], PIDLeftEncoder.out);
+        USART3_printf("Right: s = %d, m = %d, p = %d, pwm = %d\n", rightEncoderSetpoint, rightEncoderSpeed, Global_EncoderPeriod[RIGHT], PIDRightEncoder.out);
+    }
 }
-	

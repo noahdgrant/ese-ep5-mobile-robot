@@ -33,84 +33,84 @@ char serial_read_buf[256];
 void SigCatcher (int n)
 {
     wait3 (NULL, WNOHANG, NULL);    
-	signal (SIGCHLD, SigCatcher);
+    signal (SIGCHLD, SigCatcher);
 }
 
 int main (int argc, char *argv[])
 {
-	int server_socket, client_socket;
-	int client_len;
-	struct sockaddr_in client_addr, server_addr;
-	int len, i;
-	FILE *p;
+    int server_socket, client_socket;
+    int client_len;
+    struct sockaddr_in client_addr, server_addr;
+    int len, i;
+    FILE *p;
 
 
-	if (argc != 2) {
-		printf ("usage: ./server PORT_NUMBER\n");
-		return 1;
-	}	/* endif */
+    if (argc != 2) {
+        printf ("usage: ./server PORT_NUMBER\n");
+        return 1;
+    }   /* endif */
 
-	/*
-	 * install a signal handler for SIGCHILD (sent when the child terminates)
-	 */
+    /*
+     * install a signal handler for SIGCHILD (sent when the child terminates)
+     */
 
-	signal (SIGCHLD, SigCatcher);
+    signal (SIGCHLD, SigCatcher);
 
-	/*
-	 * obtain a socket for the server
-	 */
+    /*
+     * obtain a socket for the server
+     */
 
-	if ((server_socket = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
-		printf ("grrr, can't get the server socket\n");
-		return 1;
-	}	/* endif */
+    if ((server_socket = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
+        printf ("grrr, can't get the server socket\n");
+        return 1;
+    }   /* endif */
 
-	/*
-	 * initialize our server address info for binding purposes
-	 */
+    /*
+     * initialize our server address info for binding purposes
+     */
 
-	memset (&server_addr, 0, sizeof (server_addr));
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_addr.s_addr = htonl (INADDR_ANY);
-	server_addr.sin_port = htons (atoi(argv[1]));
+    memset (&server_addr, 0, sizeof (server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = htonl (INADDR_ANY);
+    server_addr.sin_port = htons (atoi(argv[1]));
 
-	if (bind (server_socket, (struct sockaddr *)&server_addr, 
-	sizeof (server_addr)) < 0) {
-		printf ("grrr, can't bind server socket\n");
-		close (server_socket);
-		return 2;
-	}	/* endif */
+    if (bind (server_socket, (struct sockaddr *)&server_addr,
+    sizeof (server_addr)) < 0) {
+        printf ("grrr, can't bind server socket\n");
+        close (server_socket);
+        return 2;
+    }   /* endif */
 
-	/*
-	 * start listening on the socket
-	 */
+    /*
+     * start listening on the socket
+     */
 
-	if (listen (server_socket, 5) < 0) {
-		printf ("grrr, can't listen on socket\n");
-		close (server_socket);
-		return 3;
-	}	/* endif */
+    if (listen (server_socket, 5) < 0) {
+        printf ("grrr, can't listen on socket\n");
+        close (server_socket);
+        return 3;
+    }   /* endif */
     
     printf("Server startup complete\n\n");
 
-	/*
-	 * for this server, run an endless loop that will
-	 * accept incoming requests from a remote client.
-	 * the server will fork a child copy of itself to handle the
-	 * request, and the parent will continue to listen for the
-	 * next request
-	 */
+    /*
+     * for this server, run an endless loop that will
+     * accept incoming requests from a remote client.
+     * the server will fork a child copy of itself to handle the
+     * request, and the parent will continue to listen for the
+     * next request
+     */
 
-	while (1) {
-		/*
-		 * accept a packet from the client
-		 */
+    while (1) {
+        /*
+         * accept a packet from the client
+         */
         client_len = sizeof (client_addr);
-		if ((client_socket = accept (server_socket, (struct sockaddr *)&client_addr, &client_len)) < 0) {
-			printf ("grrr, can't accept a packet from client\n");
-			close (server_socket);
-			return 4;
-		}	/* endif */
+        if ((client_socket = accept (server_socket, (struct sockaddr *)&client_addr, &client_len)) < 0) {
+            printf ("grrr, can't accept a packet from client\n");
+            close (server_socket);
+            return 4;
+        }   /* endif */
 
         printf("connection established to client with ID %d\n", client_addr.sin_addr.s_addr);
     
@@ -121,11 +121,11 @@ int main (int argc, char *argv[])
         }
         printf("Serial port setup complete\n");
 
-		/*
-		 * fork a child
-		 */
+        /*
+         * fork a child
+         */
 
-		if (fork() == 0) {
+        if (fork() == 0) {
             while (1) {
                 printf("waiting for command from client\n");
                 memset(buffer, 0, sizeof(buffer));
@@ -163,23 +163,23 @@ int main (int argc, char *argv[])
                 else {
                     printf("tx: %s\n", buffer);
                     Serial_Write(serial_port, buffer);
-                    Serial_Read(serial_port, buffer);
-                    len = strlen(buffer);
-                    printf("rx: %s\n", buffer);
-                    write(client_socket, buffer, len);
+                    //Serial_Read(serial_port, buffer);
+                    //len = strlen(buffer);
+                    //printf("rx: %s\n", buffer);
+                    //write(client_socket, buffer, len);
                 }
             }
-		}
+        }
         else {
-			/*
-			 * this is done by parent ONLY
-			 */
-			close (client_socket);
-		}	/* endif */
-	}	/* end while */
+            /*
+            * this is done by parent ONLY
+             */
+            close (client_socket);
+        }   /* endif */
+    }   /* end while */
 
-	return 0;
-}	/* end main */
+    return 0;
+}   /* end main */
 
 
 

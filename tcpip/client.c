@@ -30,9 +30,9 @@ char buffer[BUFSIZ];
 void sendChar(int client_socket);
 
 int main (int argc, char *argv[]) {
-	int client_socket;
-	struct sockaddr_in server_addr;
-	struct hostent *host;
+    int client_socket;
+    struct sockaddr_in server_addr;
+    struct hostent *host;
 
     // variables for joystick
     const char *device; // path to controller file
@@ -44,10 +44,10 @@ int main (int argc, char *argv[]) {
     size_t axis;
 
     // ensure port and IP were entered
-	if (argc < 3) {
-		printf ("usage: ./client IP_ADDRESS PORT_NUMBER\n");
-		return 1;
-	}
+    if (argc < 3) {
+        printf ("usage: ./client IP_ADDRESS PORT_NUMBER\n");
+        return 1;
+    }
 
     // check if controller file was specified
     if (argc > 3){
@@ -69,35 +69,35 @@ int main (int argc, char *argv[]) {
      * get a socket for communications
      */
 
-	if ((client_socket = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
-		printf ("grrr, can't get a client socket!\n");
-		return 3;
-	}	/* endif */
+    if ((client_socket = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
+        printf ("grrr, can't get a client socket!\n");
+        return 3;
+    }   /* endif */
 
-	/*
-	 * initialize struct to get a socket to host
-	 */
-	
-	memset (&server_addr, 0, sizeof (server_addr));
-	server_addr.sin_addr.s_addr = inet_addr(argv[1]);
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons (atoi(argv[2]));
+    /*
+     * initialize struct to get a socket to host
+     */
 
-	/*
-	 * attempt a connection to server
-	 */
+    memset (&server_addr, 0, sizeof (server_addr));
+    server_addr.sin_addr.s_addr = inet_addr(argv[1]);
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons (atoi(argv[2]));
 
-	if (connect (client_socket, (struct sockaddr *)&server_addr,
-	sizeof (server_addr)) < 0) {
-		printf ("grrr, can't connet to server!\n");
-		close (client_socket);
-		return 4;
-	}	/* endif */
+    /*
+     * attempt a connection to server
+     */
 
-	/*
-	 * now that we have a connection, get a commandline from
-	 * the user, and fire it off to the server
-	 */
+    if (connect (client_socket, (struct sockaddr *)&server_addr,
+    sizeof (server_addr)) < 0) {
+        printf ("grrr, can't connet to server!\n");
+        close (client_socket);
+        return 4;
+    }   /* endif */
+
+    /*
+     * now that we have a connection, get a commandline from
+     * the user, and fire it off to the server
+     */
     printf("Connected to server\n");
     while (read_event(js, &event) == 0) {
         switch (event.type){
@@ -293,7 +293,7 @@ int main (int argc, char *argv[]) {
     //send shutdown command
     close(js);
     return 0;
-}	/* end main */
+}   /* end main */
 
 void sendChar(int client_socket){
     write (client_socket, buffer, strlen (buffer));
