@@ -130,7 +130,6 @@ int main (int argc, char *argv[])
                 printf("waiting for command from client\n");
                 memset(buffer, 0, sizeof(buffer));
                 read(client_socket, buffer, BUFSIZ);
-
                 // PROCESS COMMAND
                 // Close client connection
                 if (strcmp(buffer, "Q") == 0) {
@@ -145,7 +144,8 @@ int main (int argc, char *argv[])
                     break;
                 
                 // Shutdown server
-                } else if (strcmp(buffer, "shutdown") == 0 ) {
+                }
+                else if (strcmp(buffer, "shutdown") == 0 ) {
                     strcpy(buffer, "Server connection closed\n");
                     len = strlen(buffer);
                     write (client_socket, buffer, len);
@@ -159,7 +159,8 @@ int main (int argc, char *argv[])
                     return 0;
 
                 // Send command to robot
-                } else {
+                }
+                else {
                     printf("tx: %s\n", buffer);
                     Serial_Write(serial_port, buffer);
                     Serial_Read(serial_port, buffer);
@@ -168,7 +169,8 @@ int main (int argc, char *argv[])
                     write(client_socket, buffer, len);
                 }
             }
-		} else {
+		}
+        else {
 			/*
 			 * this is done by parent ONLY
 			 */

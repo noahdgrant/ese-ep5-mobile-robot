@@ -47,49 +47,38 @@ int main(void) {
 	// PROGRAM LOOP
 	while(1) {
         switch(USART3_dequeue()){
-            case '0':{
-                USART3_printf("Forward");
+            case '0':{  //Forward
                 break;
             }
-            case '1':{
-                USART3_printf("Forward-Left");
+            case '1':{  //Forward-Left
                 break;
             }
-            case '2':{
-                USART3_printf("Forward-Right");
+            case '2':{  //Forward-Right
                 break;
             }
-            case '3':{
-                USART3_printf("Hard-Left");
+            case '3':{  //Hard-Left
                 break;
             }
-            case '4':{
-                USART3_printf("Hard-Right");
+            case '4':{  //Hard-Right
                 break;
             }
-            case '5':{
-                USART3_printf("Backwards");
+            case '5':{  //Backwards
                 break;
             }
-            case '6':{
-                USART3_printf("Backward-Left");
+            case '6':{  //Backward-Left
                 break;
             }
-            case '7':{
-                USART3_printf("Backward-Right");
+            case '7':{  //Backward-Right
                 break;
             }
-            case '8':{
-                USART3_printf("Faster");
+            case '8':{  //Faster
                 break;
             }
-            case '9':{
-                USART3_printf("Slower");
+            case '9':{  //Slower
                 break;
             }
             // Stop robot
-            case 'A':{
-                USART3_printf("Stop Moving");
+            case 'A':{  //Stop Moving
                 StepperStep = STEPPER_STOP;
                 DCMotorLeftDir = DCMOTOR_STOP;
                 DCMotorRightDir = DCMOTOR_STOP;
@@ -97,28 +86,28 @@ int main(void) {
                 rightEncoderSetpoint = 0;
                 break;
             }
-            case 'B':{
-                USART3_printf("Center Cam");
+            case 'B':{  //Center Cam
+                Stepper_Range();
+                RCServoAngle = SERVO_HOME;
                 break;
             }
-            case 'C':{
-                USART3_printf("Pan Up");
+            case 'C':{  //Pan Up
+                RCServoAngle += SERVO_INCREASE;
                 break;
             }
-            case 'D':{
-                USART3_printf("Pan Down");
+            case 'D':{  //Pan Down
                 break;
             }
-            case 'E':{
-                USART3_printf("Pan Left");
+            case 'E':{  //Pan Left
+                StepperStep = STEPPER_CCW_FULL_STEP;
                 break;
             }
-            case 'F':{
-                USART3_printf("Pan Right");
+            case 'F':{  // Pan Right
+                StepperStep = STEPPER_CW_FULL_STEP;
                 break;
             }
-            case 'G':{
-                USART3_printf("Stop");
+            case 'G':{  //Stop
+                StepperStep = STEPPER_STOP;
                 break;
             }/*
 

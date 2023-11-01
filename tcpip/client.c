@@ -98,6 +98,7 @@ int main (int argc, char *argv[]) {
 	 * now that we have a connection, get a commandline from
 	 * the user, and fire it off to the server
 	 */
+    printf("Connected to server\n");
     while (read_event(js, &event) == 0) {
         switch (event.type){
             case JS_EVENT_BUTTON:
@@ -124,6 +125,7 @@ int main (int argc, char *argv[]) {
                     case 6:     // ZL Button
                         printf("ZL %s\n", event.value ? "pressed" : "released");
                         if(event.value){
+                            memset(buffer, 0, sizeof(buffer));
                             strcpy(buffer, "9");
                             sendChar(client_socket);
                             close (client_socket);
@@ -149,6 +151,7 @@ int main (int argc, char *argv[]) {
                     case 11:     // R3 Button
                         printf("R3 %s\n", event.value ? "pressed" : "released");
                         if(event.value){
+                            memset(buffer, 0, sizeof(buffer));
                             strcpy(buffer, "B");
                             sendChar(client_socket);
                             close (client_socket);
