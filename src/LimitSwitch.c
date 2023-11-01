@@ -6,10 +6,6 @@
 *******************************************************************************/
 
 #include "LimitSwitch.h"
-#include "Utility.h"
-#include "stm32f303xe.h"
-#include "Stepper.h"
-
 
 /*******************************************************************************
 *						        PUBLIC FUNCTIONS				    		   *
@@ -94,16 +90,14 @@ uint8_t LimitSwitch_PressCheck(uint8_t direction){
 }
 
 void EXTI9_5_IRQHandler(void) {
-    extern volatile uint8_t StepperLastStep;	// The last step the servo took
-
     if ((EXTI->PR & EXTI_PR_PIF5) != 0) { // left limit
-        StepperLastStep = 0;
+        StepperStep = 0;
         // Cleared flag by writing 1
         EXTI->PR |= EXTI_PR_PIF5;
     }
     
     else if ((EXTI->PR & EXTI_PR_PIF6) != 0) { // right limit
-        StepperLastStep = 0;
+        StepperStep = 0;
         // Cleared flag by writing 1
         EXTI->PR |= EXTI_PR_PIF6;
     }

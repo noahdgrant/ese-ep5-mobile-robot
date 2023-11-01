@@ -19,8 +19,8 @@
 #define MAX_DUTY_CYCLE         100
 #define MIN_DUTY_CYCLE         50
 
-#define DCMOTOR_SPEED_INC 5
-#define DCMOTOR_SPEED_DEC 5
+#define DCMOTOR_SPEED_INC 2
+#define DCMOTOR_SPEED_DEC 2
 
 extern uint8_t DCMotorLeftDir;
 extern uint8_t DCMotorRightDir;

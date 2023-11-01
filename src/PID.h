@@ -1,20 +1,17 @@
+/*******************************************************************************
+* Name: PID.h (interface)
+* Author(s): Noah Grant, Wyatt Richard
+* Date: October 31, 2023
+* Description: PID control.
+*******************************************************************************/
+
 #ifndef PID_H
 #define PID_H
 
 #include "../stm32-base/CMSIS/inc/stm32f303xe.h"
 #include "Utility.h"
 #include "DCMotor.h"
-
-#define PID_PRIORITY 9
-
-#define PID_L_KP 10
-#define PID_L_KI 0
-#define PID_R_KP 10
-#define PID_R_KI 0
-#define PID_LIM_MIN 0          // PWM
-#define PID_LIM_MAX 100
-#define PID_LIM_MIN_INT 0
-#define PID_LIM_MAX_INT 100
+#include "Encoder.h"
 
 typedef struct {
 	// Controller gains

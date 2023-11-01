@@ -49,7 +49,7 @@ int main(void) {
         switch(USART3_dequeue()){
             // Stop robot
             case 'S':{
-                StepperLastStep = STEPPER_STOP;
+                StepperStep = STEPPER_STOP;
                 DCMotorLeftDir = DCMOTOR_STOP;
                 DCMotorRightDir = DCMOTOR_STOP;
                 leftEncoderSetpoint = 0;
@@ -59,15 +59,15 @@ int main(void) {
 
             // Stepper
             case '0':{
-                StepperLastStep = STEPPER_CW_FULL_STEP;
+                StepperStep = STEPPER_CW_FULL_STEP;
                 break;
             }
             case '1':{
-                StepperLastStep = STEPPER_CCW_FULL_STEP;
+                StepperStep = STEPPER_CCW_FULL_STEP;
                 break;
             }
             case '2':{
-                StepperLastStep = STEPPER_STOP;
+                StepperStep = STEPPER_STOP;
                 break;
             }
 
@@ -141,8 +141,8 @@ int main(void) {
         }
 
         DCMotor_SetDirs(DCMotorLeftDir, DCMotorRightDir);
-        //Stepper_Step(StepperLastStep);
-        //RCServo_SetAngle(RCServoAngle);
+        Stepper_Step(StepperStep);
+        RCServo_SetAngle(RCServoAngle);
 
         USART3_printf("Left: s = %d, m= %d, p = %d, pwm = %d\n", leftEncoderSetpoint, leftEncoderSpeed, Global_EncoderPeriod[LEFT], PIDLeftEncoder.out);
         USART3_printf("Right: s = %d, m = %d, p = %d, pwm = %d\n", rightEncoderSetpoint, rightEncoderSpeed, Global_EncoderPeriod[RIGHT], PIDRightEncoder.out);

@@ -6,24 +6,25 @@
 *******************************************************************************/
 
 #include "RCServo.h"
-#include "Utility.h"
 
-
+/*******************************************************************************
+*						        GLOBAL VARIABLES    						   *
+*******************************************************************************/
 int RCServoAngle = 0;
 
 /*******************************************************************************
 *						LOCAL CONSTANTS AND VARIABLES						   *
 *******************************************************************************/
-
 #define SERVO_CENTRE 1500		// Servo centre pulse width (us)
 #define SERVO_NEG_LMT 1050		// Servo negative mechanical limit pulse width (us)
 #define SERVO_POS_LMT 1950		// Servo positive mechanical limit pulse width (us)
 #define US_PER_DEGREE 10		// Servo us/degree pulse width ratio
 
-/*******************************************************************************
-*												PUBLIC FUNCTIONS													*
-*******************************************************************************/
+static int RCServoLastAngle = SERVO_HOME;
 
+/*******************************************************************************
+*						    PUBLIC FUNCTIONS								   *
+*******************************************************************************/
 /*******************************************************************************
 * RCServo_init() - Configure setting for servo motor.
 * No inputs.
@@ -114,39 +115,41 @@ void RCServo_Init(void){
 /*******************************************************************************
 * RCServo_setAngle() - Sets angle of the servo motor by updating the pulse width.
 * angle		- Servo motor angle.
-* Returns pulse width based on input angle.
+* No return value
 *******************************************************************************/
-int16_t RCServo_SetAngle(int16_t angle){
-	int16_t PW = 0;	// Pulse width
-	
-	// Pulse width is position set point
-	// Pulse train needs to repeat every 20us
-	
-	// 1. Convert the target angle to the corresponding target Pulse Width
-		// According to angle vs PW graph from slides: 1 degree = 10us
-			// m = (y2 - y1) / (x2 - x1)
-			// m = (90 - 0) / (2400 - 1500)
-			// m = 0.1 degree/us (10us/degree)
-	PW = SERVO_CENTRE + angle * US_PER_DEGREE;
-	
-	// 2. Check whether the PW has exceeded the mechanical (+45 ~ -45 degrees) & motor limit (+/- 90 degrees) and cap the target PW at the limits!
-		// 600us 		-90 degrees		(motor limit)
-		// 900us 		-60 degrees
-		// 1050us 	-45 degrees 	(mechanical limit)
-		// 1500us 	0 degrees			(centre)
-		// 1950us 	+45 degrees		(mechanical limit)
-		// 2100us 	+60 degrees
-		// 2400us 	+90 degrees		(motor limit)
-	if(PW > SERVO_POS_LMT){
-		PW = SERVO_POS_LMT;
+void RCServo_SetAngle(int16_t angle){
+    if (angle != RCServoLastAngle) {
+        int16_t PW = 0;	// Pulse width
+        
+        // Pulse width is position set point
+        // Pulse train needs to repeat every 20us
+        
+        // 1. Convert the target angle to the corresponding target Pulse Width
+            // According to angle vs PW graph from slides: 1 degree = 10us
+                // m = (y2 - y1) / (x2 - x1)
+                // m = (90 - 0) / (2400 - 1500)
+                // m = 0.1 degree/us (10us/degree)
+        PW = SERVO_CENTRE + angle * US_PER_DEGREE;
+        
+        // 2. Check whether the PW has exceeded the mechanical (+45 ~ -45 degrees) & motor limit (+/- 90 degrees) and cap the target PW at the limits!
+            // 600us 		-90 degrees		(motor limit)
+            // 900us 		-60 degrees
+            // 1050us 	-45 degrees 	(mechanical limit)
+            // 1500us 	0 degrees			(centre)
+            // 1950us 	+45 degrees		(mechanical limit)
+            // 2100us 	+60 degrees
+            // 2400us 	+90 degrees		(motor limit)
+        if(PW > SERVO_POS_LMT){
+            PW = SERVO_POS_LMT;
+        }
+        else if(PW < SERVO_NEG_LMT){
+            PW = SERVO_NEG_LMT;
+        }
+        
+        // 3. Write the new target PW into TIM15 CR2 
+        FORCE_BITS(TIM15->CCR2, 0xFFFFUL, (uint16_t)PW);
+
+        RCServoLastAngle = angle;
 	}
-	else if(PW < SERVO_NEG_LMT){
-		PW = SERVO_NEG_LMT;
-	}
-	
-	// 3. Write the new target PW into TIM15 CR2 
-	FORCE_BITS(TIM15->CCR2, 0xFFFFUL, (uint16_t)PW);
-	
-	// 4. return the calculated PW for printout in main()
-	return(PW);
 }
+

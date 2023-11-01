@@ -1,36 +1,56 @@
-#include "stdlib.h"
+/*******************************************************************************
+* Name: PID.c (implementation)
+* Author(s): Noah Grant, Wyatt Richard
+* Date: October 31, 2023
+* Description: PID control.
+*******************************************************************************/
+
+#include <stdlib.h>
 
 #include "PID.h"
-#include "DCMotor.h"
-#include "Encoder.h"
 
-// Code based on: https://github.com/pms67/PID
+// Code based on: 
+// https://github.com/pms67/PID
 // https://github.com/curiores/ArduinoTutorials/blob/main/SpeedControl/SpeedControl/SpeedControl.ino
 
+/*******************************************************************************
+*                            CONSTANTS & DEFINES                               *
+*******************************************************************************/
+#define PID_PRIORITY 9
+
+#define PID_L_KP 3
+#define PID_L_KI 0
+#define PID_R_KP 3
+#define PID_R_KI 0
+#define PID_LIM_MIN 0           // PWM
+#define PID_LIM_MAX 100         // PWM
+#define PID_LIM_MIN_INT 0       // PWM
+#define PID_LIM_MAX_INT 100     // PWM
+
+/*******************************************************************************
+*                               GLOBAL VARIABLES                               *
+*******************************************************************************/
 PIDController PIDLeftEncoder = {PID_L_KP, PID_L_KI, PID_LIM_MIN, PID_LIM_MAX,
                                     PID_LIM_MIN_INT, PID_LIM_MAX_INT, 0, 0, 0, 0};
 
 PIDController PIDRightEncoder = {PID_R_KP, PID_R_KI, PID_LIM_MIN, PID_LIM_MAX,
                                     PID_LIM_MIN_INT, PID_LIM_MAX_INT, 0, 0, 0, 0};
 
-static void PID_ControllerInit(PIDController *pid) {
-	// Clear controller variables
-	pid->integrator = 0;
-	pid->prevError  = 0;
-    pid->deltaT = 0;
-	pid->out = 0;
-}
-
+/*******************************************************************************
+*                               PUBLIC FUNCTIONS                               *
+*******************************************************************************/
+/*******************************************************************************
+* PID_Init() - Initialize time for PID control law.
+* No inputs.
+* No return value.
+*******************************************************************************/
 void PID_Init(void) {
-    // Initialize PID controllers
-
     // Configure TIM4 for PI control law
     SET_BITS(RCC->APB1ENR, RCC_APB1ENR_TIM4EN);         // Turn on Timer 4
     SET_BITS(TIM4->PSC, 71UL);                          // Set PSC so it counts in 1us
     CLEAR_BITS(TIM4->CR1, TIM_CR1_DIR);                 // Set TIM4 counting direction to upcounting
     FORCE_BITS(TIM4->ARR, 0xFFFFUL, 33332UL);           // Set ARR to 33333us
     SET_BITS(TIM4->CR1, TIM_CR1_ARPE);                  // Enable ARR preload (ARPE) in CR1
-    //SET_BITS(TIM4->BDTR, TIM_BDTR_MOE);               // Set main output enabled (MOE) in BDTR
     CLEAR_BITS(TIM4->CR1, TIM_CR1_UDIS);                // Set update request source
     CLEAR_BITS(TIM4->CR1, TIM_CR1_URS);                 // Enable update
     SET_BITS(TIM4->DIER, TIM_DIER_UIE);                 // Enable timer overflow to trigger IRQ
@@ -40,6 +60,14 @@ void PID_Init(void) {
     SET_BITS(TIM4->CR1, TIM_CR1_CEN);                   // Enable TIM4 to start counting
 }
 
+/*******************************************************************************
+* PID_Update() - Update PID controller.
+* pid           - PID controller to update
+* setpoint      - desired output
+* measurement   - current output
+* deltaT        - time since last measurement
+* Returns the new output.
+*******************************************************************************/
 int PID_Update(PIDController *pid, int setpoint, int measurement, int deltaT) {
     // Error
     int error = setpoint - measurement;
@@ -50,7 +78,7 @@ int PID_Update(PIDController *pid, int setpoint, int measurement, int deltaT) {
 
     
     // Integrator
-    pid->integrator = pid->integrator + error * deltaT; // (pid->Ki * pid->deltaT * (error + pid->prevError)) / 2;
+    pid->integrator = pid->integrator + (error * deltaT)/1000; // (pid->Ki * pid->deltaT * (error + pid->prevError)) / 2;
 
 	// Anti-wind-up via integrator clamping
     if (pid->integrator > pid->limMaxInt) {
@@ -82,10 +110,10 @@ int PID_Update(PIDController *pid, int setpoint, int measurement, int deltaT) {
 
 void TIM4_IRQHandler(void) {
     // Update PWM outputs
-    PID_Update(&PIDLeftEncoder, leftEncoderSetpoint, leftEncoderSpeed, Global_EncoderPeriod[0]);
+    PID_Update(&PIDLeftEncoder, leftEncoderSetpoint, leftEncoderSpeed, Global_EncoderPeriod[LEFT]);
     DCMotor_SetPWM(DCMOTOR_LEFT, abs(PIDLeftEncoder.out));
 
-    PID_Update(&PIDRightEncoder, rightEncoderSetpoint, rightEncoderSpeed, Global_EncoderPeriod[1]);
+    PID_Update(&PIDRightEncoder, rightEncoderSetpoint, rightEncoderSpeed, Global_EncoderPeriod[RIGHT]);
     DCMotor_SetPWM(DCMOTOR_RIGHT, abs(PIDRightEncoder.out));
 
     // Clear interrupt flag
