@@ -40,9 +40,8 @@ int main(void) {
     RCServo_SetAngle(SERVO_HOME);
 
     // Startup menu
-    USART3_printf("--- Engineering Project 5 Mobile Robot ---\n");
-    USART3_printf("Robot initialized...\n");
-
+//    USART3_printf("--- Engineering Project 5 Mobile Robot ---\n");
+//    USART3_printf("Robot initialized...\n");
 
     // PROGRAM LOOP
     while(1) {
@@ -57,89 +56,103 @@ int main(void) {
                 break;
             }
 
-                // Stepper
+            // DC motors
             case '0':{  // ljs N
-                StepperStep = STEPPER_CW_FULL_STEP;
-                break;
-            }
-            case '1':{  // ljs NW
-                StepperStep = STEPPER_CCW_FULL_STEP;
-                break;
-            }
-            case '2':{  // ljs NE
-                StepperStep = STEPPER_STOP;
-                break;
-            }
-
-                // Servo
-            case '3':{  // ljs W
-                RCServoAngle -= SERVO_DECREASE;
-                break;
-            }
-            case '4':{  // ljs E
-                RCServoAngle += SERVO_INCREASE;
-                break;
-            }
-            case '5':{  // ljs S
-                RCServoAngle = SERVO_HOME;
-                break;
-            }
-
-                // DC motors
-            case '6':{  // ljs SW
                 DCMotorLeftDir = DCMOTOR_FWD;
                 DCMotorRightDir = DCMOTOR_FWD;
                 break;
             }
-            case '7':{  // ljs SE
+            case '1':{  // ljs NW
+                DCMotorLeftDir = DCMOTOR_STOP;
+                DCMotorRightDir = DCMOTOR_FWD;
+                break;
+            }
+            case '2':{  // ljs NE
+                DCMotorLeftDir = DCMOTOR_FWD;
+                DCMotorRightDir = DCMOTOR_STOP;
+                break;
+            }
+            case '3':{  // ljs W
+                DCMotorLeftDir = DCMOTOR_BWD;
+                DCMotorRightDir = DCMOTOR_FWD;
+                break;
+            }
+            case '4':{  // ljs E
+                DCMotorLeftDir = DCMOTOR_FWD;
+                DCMotorRightDir = DCMOTOR_BWD;
+                break;
+            }
+            case '5':{  // ljs S
                 DCMotorLeftDir = DCMOTOR_BWD;
                 DCMotorRightDir = DCMOTOR_BWD;
                 break;
             }
-            case '8':{  // ZR
+            case '6':{  // ljs SW
                 DCMotorLeftDir = DCMOTOR_STOP;
-                DCMotorRightDir = DCMOTOR_FWD;
+                DCMotorRightDir = DCMOTOR_BWD;
                 break;
             }
-            case '9':{  // ZL
-                DCMotorLeftDir = DCMOTOR_STOP;
-                DCMotorRightDir = DCMOTOR_FWD;
+            case '7':{  // ljs SE
+                DCMotorLeftDir = DCMOTOR_BWD;
+                DCMotorRightDir = DCMOTOR_STOP;
                 break;
             }
-            case 'q':{
+            case 'A':{ // ljs _
                 DCMotorLeftDir = DCMOTOR_STOP;
                 DCMotorRightDir = DCMOTOR_STOP;
                 break;
             }
 
-                // Speed
-            case 'w': {
+            // Speed
+            case '8': { // ZR
                 leftEncoderSetpoint += DCMOTOR_SPEED_INC;
-                break;
-            }
-            case 'e': {
-                leftEncoderSetpoint -= DCMOTOR_SPEED_DEC;
-                break;
-            }
-            case 'r': {
                 rightEncoderSetpoint += DCMOTOR_SPEED_INC;
                 break;
             }
-            case 't': {
+            case '9': { // ZL
+                leftEncoderSetpoint -= DCMOTOR_SPEED_DEC;
                 rightEncoderSetpoint -= DCMOTOR_SPEED_DEC;
                 break;
             }
 
-                // Ultrasonic
-            case 'A':{
+            // Servo
+            case 'B':{  // R3
+                RCServoAngle = SERVO_HOME;
+                break;
+            }
+            case 'C':{  // rjs N
+                RCServoAngle += SERVO_DECREASE;
+                break;
+            }
+            case 'D':{  // rjs S
+                RCServoAngle -= SERVO_INCREASE;
+                break;
+            }
+
+            // Stepper
+            case 'E':{  // rjs E
+                StepperStep = STEPPER_CW_FULL_STEP;
+                break;
+            }
+            case 'F':{  // rjs W
+                StepperStep = STEPPER_CCW_FULL_STEP;
+                break;
+            }
+            case 'G':{ // rjs _
+                StepperStep = STEPPER_STOP;
+                break;
+            }
+
+            // Ultrasonic
+            case 'H':{
                 Ultra_StartTrigger();
                 while(!Ultra_EchoRx());
                 USART3_printf("User Input: 5");
                 USART3_printf("\nUltrasonic: %dcm", Ultra_ReadSensor());
                 break;
             }
-
-                // Invalid command
+    
+            // Invalid command
             default: {
                 break;
             }
@@ -148,8 +161,7 @@ int main(void) {
         DCMotor_SetDirs(DCMotorLeftDir, DCMotorRightDir);
         Stepper_Step(StepperStep);
         RCServo_SetAngle(RCServoAngle);
-
-        USART3_printf("Left: s = %d, m= %d, p = %d, pwm = %d\n", leftEncoderSetpoint, leftEncoderSpeed, Global_EncoderPeriod[LEFT], PIDLeftEncoder.out);
-        USART3_printf("Right: s = %d, m = %d, p = %d, pwm = %d\n", rightEncoderSetpoint, rightEncoderSpeed, Global_EncoderPeriod[RIGHT], PIDRightEncoder.out);
+        Delay_ms(5);
     }
 }
+

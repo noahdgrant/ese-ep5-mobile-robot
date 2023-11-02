@@ -5,15 +5,20 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <stdio.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include "serial.h"
 
+#define ROBOT_STOP "S"
+
 void communicate(int clientID, int serialID);
+void sigCatcher(int n);
 
 int quit;
 
@@ -28,6 +33,9 @@ int main(int argc, char* argv[]) {
         printf("Usage: ./server PORT\n");
         return -1;
     }
+
+    // Send when child terminates
+//    signal(SIGCHLD, sigCatcher);
 
     // Create socket
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -58,11 +66,11 @@ int main(int argc, char* argv[]) {
     // Open serial port
     serialPort = Serial_Open();
     if (serialPort == -1) {
-        printf("[SERVER] Serial port did not open correctly...\n");
+        printf("[Server] Serial port did not open correctly...\n");
         return -1;
     }
     else {
-        printf("[SERVER] Serial port opened...\n");
+        printf("[Server] Serial port opened...\n");
     }
 
     // Listen for client connection
@@ -88,7 +96,10 @@ int main(int argc, char* argv[]) {
         }
        
         // Communicate with client
-        communicate(clientSocket, serialPort);
+//        if (fork() == 0 ) {
+            communicate(clientSocket, serialPort);
+ //       }
+
         close(clientSocket);
     }
 
@@ -114,6 +125,7 @@ void communicate(int clientID, int serialID) {
             strcpy(buf, "Q");
             write(clientID, buf, strlen(buf));
             printf("[Server] Closing connection...\n");
+            Serial_Write(serialID, ROBOT_STOP);
             break;
         }
         else if (strncmp("shutdown", buf, 8) == 0) {
@@ -121,16 +133,18 @@ void communicate(int clientID, int serialID) {
             strcpy(buf, "shutdown");
             write(clientID, buf, strlen(buf));
             printf("[Server] Shutting down...\n");
+            Serial_Write(serialID, ROBOT_STOP);
             quit = 1;
             break;
         }
         else {
-            printf("[SERVER] cmd: %s\n", buf);
+            printf("[Server] cmd: %s\n", buf);
             Serial_Write(serialID, buf);
-            //Serial_Read(serialPort, buf);
-            //printf("rx: %s\n", buf);
-            //write(clientSocket, buf, strlen(buf));
         }
     }
 }
 
+void sigCatcher(int n) {
+    wait3(NULL, WNOHANG, NULL);
+    signal(SIGCHLD, sigCatcher);
+}

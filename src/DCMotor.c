@@ -201,9 +201,6 @@ void DCMotor_SetPWM(uint8_t motor, uint16_t pwm) {
     if (pwm > MAX_DUTY_CYCLE) {
         pwm = MAX_DUTY_CYCLE;
     }
-    else if (pwm < MIN_DUTY_CYCLE) {
-        pwm = MIN_DUTY_CYCLE;
-    }
 
     // Convert to ms ON-time
     pwm *= 10;        // dutyCycle = (pwm * 1000) / 100

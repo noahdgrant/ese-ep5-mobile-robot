@@ -124,7 +124,7 @@ void Stepper_Step(uint8_t stepType){
 		}
 	}
 
-    Stepper_Ouput(stepPatterns[0x7 & stepCounter]);		// & with 0x7 because we just want the lower 3 bits
+    Stepper_Ouput(stepPatterns[0x7 & stepCounter]);		// & with 0x7 because we just want the lower 3 bits	
 }
 
 uint8_t Stepper_Range(void) {
