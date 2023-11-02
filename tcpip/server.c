@@ -2,184 +2,135 @@
  * server.c
  */
 
+#include <netdb.h>
+#include <netinet/in.h>
 #include <stdio.h>
-#include <string.h>
-#include <ctype.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <signal.h>
-#include <sys/wait.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "serial.h"
 
-char buffer[BUFSIZ];
-int serial_port;
-char serial_read_buf[256];
+void communicate(int clientID, int serialID);
 
-/*
- * this signal handler is used to catch the termination
- * of the child. Needed so that we can avoid wasting
- * system resources when "zombie" processes are created
- * upon exit of the child (as the parent could concievably
- * wait for the child to exit)
- */
+int quit;
 
-void SigCatcher (int n)
-{
-    wait3 (NULL, WNOHANG, NULL);    
-    signal (SIGCHLD, SigCatcher);
-}
-
-int main (int argc, char *argv[])
-{
-    int server_socket, client_socket;
-    int client_len;
-    struct sockaddr_in client_addr, server_addr;
-    int len, i;
-    FILE *p;
-
+int main(int argc, char* argv[]) {
+    int serverSocket, clientSocket;
+    unsigned int clientLen;
+    struct sockaddr_in serverAddr, clientAddr;
+    int serialPort;
+    quit = 0;
 
     if (argc != 2) {
-        printf ("usage: ./server PORT_NUMBER\n");
-        return 1;
-    }   /* endif */
+        printf("Usage: ./server PORT\n");
+        return -1;
+    }
 
-    /*
-     * install a signal handler for SIGCHILD (sent when the child terminates)
-     */
+    // Create socket
+    serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if (serverSocket == -1) {
+        printf("[Server] Socket creation failed...\n");
+        return -1;
+    }
+    else {
+        printf("[Server] Socket creation successful...\n");
+    }
 
-    signal (SIGCHLD, SigCatcher);
+    // Assign IP and PORT
+    memset(&serverAddr, 0, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    serverAddr.sin_port = htons(atoi(argv[1]));
 
-    /*
-     * obtain a socket for the server
-     */
-
-    if ((server_socket = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
-        printf ("grrr, can't get the server socket\n");
-        return 1;
-    }   /* endif */
-
-    /*
-     * initialize our server address info for binding purposes
-     */
-
-    memset (&server_addr, 0, sizeof (server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = htonl (INADDR_ANY);
-    server_addr.sin_port = htons (atoi(argv[1]));
-
-    if (bind (server_socket, (struct sockaddr *)&server_addr,
-    sizeof (server_addr)) < 0) {
-        printf ("grrr, can't bind server socket\n");
-        close (server_socket);
-        return 2;
-    }   /* endif */
-
-    /*
-     * start listening on the socket
-     */
-
-    if (listen (server_socket, 5) < 0) {
-        printf ("grrr, can't listen on socket\n");
-        close (server_socket);
-        return 3;
-    }   /* endif */
+    // Bind socket to IP
+    if ((bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr))) != 0) {
+        printf("[Server] Socket bind failed...\n");
+        close(serverSocket);
+        return -1;
+    }
+    else {
+        printf("[Server] Socket bind successful...\n");
+    }
     
-    printf("Server startup complete\n\n");
+    // Open serial port
+    serialPort = Serial_Open();
+    if (serialPort == -1) {
+        printf("[SERVER] Serial port did not open correctly...\n");
+        return -1;
+    }
+    else {
+        printf("[SERVER] Serial port opened...\n");
+    }
 
-    /*
-     * for this server, run an endless loop that will
-     * accept incoming requests from a remote client.
-     * the server will fork a child copy of itself to handle the
-     * request, and the parent will continue to listen for the
-     * next request
-     */
+    // Listen for client connection
+    if ((listen(serverSocket, 5)) != 0) {
+        printf("[Server] Server listen failed...\n");
+        return -1;
+    }
+    else {
+        printf("[Server] Server listening...\n");
+    }
 
-    while (1) {
-        /*
-         * accept a packet from the client
-         */
-        client_len = sizeof (client_addr);
-        if ((client_socket = accept (server_socket, (struct sockaddr *)&client_addr, &client_len)) < 0) {
-            printf ("grrr, can't accept a packet from client\n");
-            close (server_socket);
-            return 4;
-        }   /* endif */
+    clientLen = sizeof(clientAddr);
 
-        printf("connection established to client with ID %d\n", client_addr.sin_addr.s_addr);
-    
-        serial_port = Serial_Open();
-        if (serial_port == -1) {
-            printf("Serial port did not open correctly\n");
-            return 5;
-        }
-        printf("Serial port setup complete\n");
-
-        /*
-         * fork a child
-         */
-
-        if (fork() == 0) {
-            while (1) {
-                printf("waiting for command from client\n");
-                memset(buffer, 0, sizeof(buffer));
-                read(client_socket, buffer, BUFSIZ);
-                // PROCESS COMMAND
-                // Close client connection
-                if (strcmp(buffer, "Q") == 0) {
-                    strcpy(buffer, "Server connection closed\n");
-                    len = strlen(buffer);
-                    write (client_socket, buffer, len);
-                    close (client_socket);
-                    printf("Client connection closed\n");
-                   
-                    Serial_Close(serial_port);
-                    printf("Serial port closed\n\n");
-                    break;
-                
-                // Shutdown server
-                }
-                else if (strcmp(buffer, "shutdown") == 0 ) {
-                    strcpy(buffer, "Server connection closed\n");
-                    len = strlen(buffer);
-                    write (client_socket, buffer, len);
-                    close(client_socket);
-                    
-                    Serial_Close(serial_port);
-                    printf("Serial port closed\n\n");
-                    
-                    shutdown(server_socket, SHUT_RDWR);
-                    printf("Server shutdown complete\n");
-                    return 0;
-
-                // Send command to robot
-                }
-                else {
-                    printf("tx: %s\n", buffer);
-                    Serial_Write(serial_port, buffer);
-                    //Serial_Read(serial_port, buffer);
-                    //len = strlen(buffer);
-                    //printf("rx: %s\n", buffer);
-                    //write(client_socket, buffer, len);
-                }
-            }
+    while (quit != 1) {
+        // Accept client communication
+        clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddr, &clientLen);
+        if (clientSocket < 0) {
+            printf("[Server] Did not accept client...\n");
+            return -1;
         }
         else {
-            /*
-            * this is done by parent ONLY
-             */
-            close (client_socket);
-        }   /* endif */
-    }   /* end while */
+            printf("[Server] Accepted client with ID %d...\n", clientAddr.sin_addr.s_addr);
+        }
+       
+        // Communicate with client
+        communicate(clientSocket, serialPort);
+        close(clientSocket);
+    }
 
+    // Close the server
+    close(serverSocket);
+    Serial_Close(serialPort);
+
+    printf("[Server] Closed successfully...\n");
     return 0;
-}   /* end main */
+}
 
+void communicate(int clientID, int serialID) {
+    char buf[BUFSIZ];
+    FILE *p;
+    
+    while (1) {
+        memset(buf, 0, sizeof(buf));
+        read(clientID, buf, sizeof(buf));
 
+        // Execute command from client
+        if (strncmp("Q", buf, 4) == 0) {
+            memset(buf, 0, sizeof(buf));
+            strcpy(buf, "Q");
+            write(clientID, buf, strlen(buf));
+            printf("[Server] Closing connection...\n");
+            break;
+        }
+        else if (strncmp("shutdown", buf, 8) == 0) {
+            memset(buf, 0, sizeof(buf));
+            strcpy(buf, "shutdown");
+            write(clientID, buf, strlen(buf));
+            printf("[Server] Shutting down...\n");
+            quit = 1;
+            break;
+        }
+        else {
+            printf("[SERVER] cmd: %s\n", buf);
+            Serial_Write(serialID, buf);
+            //Serial_Read(serialPort, buf);
+            //printf("rx: %s\n", buf);
+            //write(clientSocket, buf, strlen(buf));
+        }
+    }
+}
 

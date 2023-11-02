@@ -27,7 +27,7 @@ int Serial_Open(void) {
     // Read in existing settings, and handle any error
     if(tcgetattr(serial_port, &tty) != 0) {
       printf("Error %i from tcgetattr: %s : %d\n", errno, strerror(errno), serial_port);
-      return 1;
+      return -1;
     }
 
 
@@ -102,7 +102,7 @@ int Serial_Open(void) {
     // Save tty settings, also checking for error
     if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
       printf("Error %i from tcsetattr: %s\n", errno, strerror(errno));
-      return 1;
+      return -1;
     }
 
     return serial_port;
@@ -128,7 +128,7 @@ int Serial_Read(int serial_port, char* buf) {
     // n is the number of bytes read. n may be 0 if no bytes were received, and can also be -1 to signal an error.
     if (num_bytes < 0) {
       printf("Error reading: %s", strerror(errno));
-      return 1;
+      return -1;
     }
 
     return 0;
