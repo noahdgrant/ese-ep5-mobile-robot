@@ -38,7 +38,7 @@ int main(void) {
 
     Stepper_Range();
     RCServo_SetAngle(SERVO_HOME);
-	
+
     // PROGRAM LOOP
     while (1) {
         Ultra_StartTrigger();
@@ -140,26 +140,26 @@ int main(void) {
                 break;
             }
             case 'C': {
-				G_RCServoModifier = SERVO_INCREASE;
+                G_RCServoModifier = SERVO_INCREASE;
                 break;
             }
             case 'D': {
-			    G_RCServoModifier = SERVO_DECREASE;
+                G_RCServoModifier = SERVO_DECREASE;
                 break;
             }
 
             // Stepper
             case 'E': {
-				if (LimitSwitch_PressCheck(RIGHT)) {
-					G_StepperStep = STEPPER_CW_FULL_STEP;
-				}
+                if (LimitSwitch_PressCheck(RIGHT)) {
+                    G_StepperStep = STEPPER_CW_FULL_STEP;
+                }
 
                 break;
             }
             case 'F': {
-				if (LimitSwitch_PressCheck(LEFT)) {
-					G_StepperStep = STEPPER_CCW_FULL_STEP;
-				}
+                if (LimitSwitch_PressCheck(LEFT)) {
+                    G_StepperStep = STEPPER_CCW_FULL_STEP;
+                }
 
                 break;
             }
@@ -185,14 +185,14 @@ int main(void) {
             }
         }
 
-		G_RCServoAngle += G_RCServoModifier;
-		if (G_RCServoAngle < SERVO_MIN) {
-			G_RCServoAngle = SERVO_MIN;
-		}
-		else if (G_RCServoAngle > SERVO_MAX) {
-			G_RCServoAngle = SERVO_MAX;
-		}
-		
+        G_RCServoAngle += G_RCServoModifier;
+        if (G_RCServoAngle < SERVO_MIN) {
+            G_RCServoAngle = SERVO_MIN;
+        }
+        else if (G_RCServoAngle > SERVO_MAX) {
+            G_RCServoAngle = SERVO_MAX;
+        }
+
         DCMotor_SetDirs(G_DCMotorLeftDir, G_DCMotorRightDir);
         Stepper_Step(G_StepperStep);
         RCServo_SetAngle(G_RCServoAngle);

@@ -1,7 +1,7 @@
 /*******************************************************************************
 // Shell code for Nucleo-64 STM32F303RE @ 72 MHz
 //
-//	Companion header file to SysClock.c
+// Companion header file to SysClock.c
 //
 // WPS 30 Apr 2020 - from Zhu Virtual Com Port demo code
 //
