@@ -10,20 +10,18 @@
 /*******************************************************************************
 *								GLOBAL VARIABLES							   *
 *******************************************************************************/
-
-volatile uint32_t Global_EncoderPeriod[2] = {0, 0};     // [0] = left, [1] = right
-volatile uint8_t overFlowCounter[2] = {0, 0};           // [0] = left, [1] = right
-volatile uint32_t leftEncoderSpeed = 0;
-volatile uint32_t rightEncoderSpeed = 0;
-int leftEncoderSetpoint = 0;
-int rightEncoderSetpoint = 0;
+volatile uint32_t G_EncoderPeriod[2] = {0, 0};     // [0] = left, [1] = right
+volatile uint32_t G_leftEncoderSpeed = 0;
+volatile uint32_t G_rightEncoderSpeed = 0;
+int G_leftEncoderSetpoint = DCMOTOR_SPEED_BASE;
+int G_rightEncoderSetpoint = DCMOTOR_SPEED_BASE;
 
 /*******************************************************************************
-*								STATIC VARIABLES							   *
+*								LOCAL VARIABLES 							   *
 *******************************************************************************/
-
 static volatile uint32_t leftEncoder[2] = {0, 0};		// [0] = current, [1] = previous
 static volatile uint32_t rightEncoder[2] = {0, 0};		// [0] = current, [1] = previous
+static volatile uint8_t overFlowCounter[2] = {0, 0};           // [0] = left, [1] = right
 
 /*******************************************************************************
 *						    	PUBLIC FUNCTIONS							   *
@@ -97,8 +95,8 @@ void TIM2_IRQHandler(void){
 	if(IS_BIT_SET(TIM2->SR, TIM_SR_CC1IF)) {
 		leftEncoder[1] = leftEncoder[0];        // Timer count (us) at last interrupt
 		leftEncoder[0] = TIM2->CCR1;            // Timer count (us) at current interrupt
-        Global_EncoderPeriod[LEFT] = leftEncoder[0] - leftEncoder[1] + (overFlowCounter[LEFT] * MAX_TIME_US);
-        leftEncoderSpeed = (UM_PER_VANE * 100) / Global_EncoderPeriod[LEFT]; // um/us = m/s -> *100 = cm/s
+        G_EncoderPeriod[LEFT] = leftEncoder[0] - leftEncoder[1] + (overFlowCounter[LEFT] * MAX_TIME_US);
+        G_leftEncoderSpeed = (UM_PER_VANE * 100) / G_EncoderPeriod[LEFT]; // um/us = m/s -> *100 = cm/s
         overFlowCounter[0] = 0;                 // left overflow counter
 	}
 	
@@ -106,8 +104,8 @@ void TIM2_IRQHandler(void){
 	if(IS_BIT_SET(TIM2->SR, TIM_SR_CC2IF)){
 		rightEncoder[1] = rightEncoder[0];
 		rightEncoder[0] = TIM2->CCR2;
-        Global_EncoderPeriod[RIGHT] = rightEncoder[0] - rightEncoder[1] + (overFlowCounter[RIGHT] * MAX_TIME_US);
-        rightEncoderSpeed = (UM_PER_VANE * 100) / Global_EncoderPeriod[RIGHT]; // um/us = m/s -> *100 = cm/s 
+        G_EncoderPeriod[RIGHT] = rightEncoder[0] - rightEncoder[1] + (overFlowCounter[RIGHT] * MAX_TIME_US);
+        G_rightEncoderSpeed = (UM_PER_VANE * 100) / G_EncoderPeriod[RIGHT]; // um/us = m/s -> *100 = cm/s 
         overFlowCounter[1] = 0;       // right overflow counter
 	}
 

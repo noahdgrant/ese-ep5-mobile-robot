@@ -8,6 +8,8 @@
 #ifndef PID_H
 #define PID_H
 
+#include <stdlib.h>
+
 #include "../stm32-base/CMSIS/inc/stm32f303xe.h"
 #include "Utility.h"
 #include "DCMotor.h"
@@ -37,9 +39,6 @@ typedef struct {
 	int out;
 
 } PIDController;
-
-extern PIDController PIDLeftEncoder;
-extern PIDController PIDRightEncoder;
 
 void PID_Init(void);
 int PID_Update(PIDController *pid, int setpoint, int measurement, int deltaT);

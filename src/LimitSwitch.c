@@ -2,16 +2,14 @@
 * Name: LimitSwitch.h (implementation)
 * Author(s): Noah Grant, Wyatt Richard
 * Date: September 15, 2023
-* Description: Camera Module Limit Switch Implementation.
+* Description: Limit switch Implementation.
 *******************************************************************************/
 
 #include "LimitSwitch.h"
-#include "Utility.h"
 
 /*******************************************************************************
 *						        PUBLIC FUNCTIONS				    		   *
 *******************************************************************************/
-
 /*******************************************************************************
 * LimitSwitch_Init() - Initialize push button setting.
 * No inputs.
@@ -90,16 +88,3 @@ uint8_t LimitSwitch_PressCheck(uint8_t direction){
     }
 }
 
-void EXTI9_5_IRQHandler(void) {
-    if ((EXTI->PR & EXTI_PR_PIF5) != 0) { // left limit
-        StepperStep = 0;
-        // Cleared flag by writing 1
-        EXTI->PR |= EXTI_PR_PIF5;
-    }
-    
-    else if ((EXTI->PR & EXTI_PR_PIF6) != 0) { // right limit
-        StepperStep = 0;
-        // Cleared flag by writing 1
-        EXTI->PR |= EXTI_PR_PIF6;
-    }
-}

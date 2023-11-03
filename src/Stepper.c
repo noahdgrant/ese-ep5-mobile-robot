@@ -10,7 +10,7 @@
 /*******************************************************************************
 *					          GLOBAL VARIABLES                                 *
 *******************************************************************************/
-volatile uint8_t StepperStep = STEPPER_STOP;
+volatile uint8_t G_StepperStep = STEPPER_STOP;
 
 /*******************************************************************************
 *					    LOCAL CONSTANTS AND VARIABLES                          *
@@ -130,26 +130,40 @@ void Stepper_Step(uint8_t stepType){
 uint8_t Stepper_Range(void) {
     uint8_t rangeCount = 0;
 	
-    StepperStep = STEPPER_CW_FULL_STEP;
+    G_StepperStep = STEPPER_CW_FULL_STEP;
 	if(!LimitSwitch_PressCheck(RIGHT)){
-		while(StepperStep != 0){
+		while(G_StepperStep != 0){
 			Stepper_Step(STEPPER_CW_FULL_STEP);
 			Delay_ms(5);
 		}
 	}
 
-	StepperStep = STEPPER_CCW_FULL_STEP;
-    while(StepperStep != 0){
+	G_StepperStep = STEPPER_CCW_FULL_STEP;
+    while(G_StepperStep != 0){
         rangeCount++;
         Stepper_Step(STEPPER_CCW_FULL_STEP);
 		Delay_ms(5);
     }
     
-	StepperStep = STEPPER_STOP;
+	G_StepperStep = STEPPER_STOP;
     for(int i = 0; i < rangeCount/2; i++){
         Stepper_Step(STEPPER_CW_FULL_STEP);
 		Delay_ms(5);
     }
     
     return rangeCount;
+}
+
+void EXTI9_5_IRQHandler(void) {
+    if ((EXTI->PR & EXTI_PR_PIF5) != 0) { // left limit
+        G_StepperStep = 0;
+        // Cleared flag by writing 1
+        EXTI->PR |= EXTI_PR_PIF5;
+    }
+    
+    else if ((EXTI->PR & EXTI_PR_PIF6) != 0) { // right limit
+        G_StepperStep = 0;
+        // Cleared flag by writing 1
+        EXTI->PR |= EXTI_PR_PIF6;
+    }
 }
