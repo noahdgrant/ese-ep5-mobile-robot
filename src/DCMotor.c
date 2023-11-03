@@ -6,7 +6,6 @@
 *******************************************************************************/
 
 #include "DCMotor.h"
-#include "Utility.h"
 
 // Drive Motor Configuration Parameters
 // - Motor Speed Control Pins:
@@ -24,12 +23,16 @@
 // (B)  0      0     1      1
 
 /*******************************************************************************
-*                               Global VARIABLES                               *
+*                           GLOBAL VARIABLES                                   *
 *******************************************************************************/
-uint8_t DCMotorLeftDir = DCMOTOR_STOP;
-uint8_t DCMotorRightDir = DCMOTOR_STOP;
+uint8_t G_DCMotorLeftDir = DCMOTOR_STOP;
+uint8_t G_DCMotorRightDir = DCMOTOR_STOP;
 
-uint8_t DCMotorLastDir[2] = {DCMOTOR_STOP, DCMOTOR_STOP};
+/*******************************************************************************
+*                           LOCAL VARIABLES                                    *
+*******************************************************************************/
+static uint8_t DCMotorLastDir[2] = {DCMOTOR_STOP, DCMOTOR_STOP};
+
 /*******************************************************************************
 *                               PUBLIC FUNCTIONS                               *
 *******************************************************************************/
@@ -200,9 +203,6 @@ void DCMotor_SetDirs(uint8_t leftDir, uint8_t rightDir) {
 void DCMotor_SetPWM(uint8_t motor, uint16_t pwm) {
     if (pwm > MAX_DUTY_CYCLE) {
         pwm = MAX_DUTY_CYCLE;
-    }
-    else if (pwm < MIN_DUTY_CYCLE) {
-        pwm = MIN_DUTY_CYCLE;
     }
 
     // Convert to ms ON-time

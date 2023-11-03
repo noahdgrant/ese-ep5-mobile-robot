@@ -5,9 +5,6 @@
 * Description: PID control.
 *******************************************************************************/
 
-#include <stdlib.h>
-
-#include "DCMotor.h"
 #include "PID.h"
 
 // Code based on: 
@@ -29,12 +26,12 @@
 #define PID_LIM_MAX_INT MAX_DUTY_CYCLE
 
 /*******************************************************************************
-*                               GLOBAL VARIABLES                               *
+*                               LOCAL VARIABLES                                *
 *******************************************************************************/
-PIDController PIDLeftEncoder = {PID_L_KP, PID_L_KI, PID_LIM_MIN, PID_LIM_MAX,
+static PIDController PIDLeftEncoder = {PID_L_KP, PID_L_KI, PID_LIM_MIN, PID_LIM_MAX,
                                     PID_LIM_MIN_INT, PID_LIM_MAX_INT, 0, 0, 0, 0};
 
-PIDController PIDRightEncoder = {PID_R_KP, PID_R_KI, PID_LIM_MIN, PID_LIM_MAX,
+static PIDController PIDRightEncoder = {PID_R_KP, PID_R_KI, PID_LIM_MIN, PID_LIM_MAX,
                                     PID_LIM_MIN_INT, PID_LIM_MAX_INT, 0, 0, 0, 0};
 
 /*******************************************************************************
@@ -107,10 +104,10 @@ int PID_Update(PIDController *pid, int setpoint, int measurement, int deltaT) {
 
 void TIM4_IRQHandler(void) {
     // Update PWM outputs
-    PID_Update(&PIDLeftEncoder, leftEncoderSetpoint, leftEncoderSpeed, Global_EncoderPeriod[LEFT]);
+    PID_Update(&PIDLeftEncoder, G_leftEncoderSetpoint, G_leftEncoderSpeed, G_EncoderPeriod[LEFT]);
     DCMotor_SetPWM(DCMOTOR_LEFT, abs(PIDLeftEncoder.out));
 
-    PID_Update(&PIDRightEncoder, rightEncoderSetpoint, rightEncoderSpeed, Global_EncoderPeriod[RIGHT]);
+    PID_Update(&PIDRightEncoder, G_rightEncoderSetpoint, G_rightEncoderSpeed, G_EncoderPeriod[RIGHT]);
     DCMotor_SetPWM(DCMOTOR_RIGHT, abs(PIDRightEncoder.out));
 
     // Clear interrupt flag

@@ -2,7 +2,7 @@
 * Name: LimitSwitch.h (implementation)
 * Author(s): Noah Grant, Wyatt Richard
 * Date: September 15, 2023
-* Description: Camera Module Limit Switch Implementation.
+* Description: Limit switch Implementation.
 *******************************************************************************/
 
 #include "LimitSwitch.h"
@@ -10,7 +10,6 @@
 /*******************************************************************************
 *						        PUBLIC FUNCTIONS				    		   *
 *******************************************************************************/
-
 /*******************************************************************************
 * LimitSwitch_Init() - Initialize push button setting.
 * No inputs.
@@ -20,7 +19,7 @@ void LimitSwitch_Init(void){
     // Enable GPIO Port C
     ENABLE_GPIO_CLOCK(C);
     // left  -> PC5
-    // right -> pC6
+    // right -> PC6
 
     //Set PC5 to INPUT mode (00)
     GPIO_MODER_SET(C, 5, GPIO_MODE_IN);
@@ -65,14 +64,14 @@ void LimitSwitch_Init(void){
 * Returns result depending on button status.
 *******************************************************************************/
 uint8_t LimitSwitch_PressCheck(uint8_t direction){
-    if(direction) { // Clockwise, Right
+    if(direction == RIGHT) { // Clockwise, Right
         // Check if ODR of PC6 is set
         if(IS_BIT_SET(GPIOC->IDR, GPIO_IDR_6)){
-            // If set, button is not pressed because of ACTIVE-LOW.
+            // If set, button is pressed.
             return(0);
         }
         else{
-            // If cleared, button is pressed.
+            // If cleared, button is not pressed.
             return(1);
         }
     }
@@ -89,16 +88,3 @@ uint8_t LimitSwitch_PressCheck(uint8_t direction){
     }
 }
 
-void EXTI9_5_IRQHandler(void) {
-    if ((EXTI->PR & EXTI_PR_PIF5) != 0) { // left limit
-        StepperStep = 0;
-        // Cleared flag by writing 1
-        EXTI->PR |= EXTI_PR_PIF5;
-    }
-    
-    else if ((EXTI->PR & EXTI_PR_PIF6) != 0) { // right limit
-        StepperStep = 0;
-        // Cleared flag by writing 1
-        EXTI->PR |= EXTI_PR_PIF6;
-    }
-}

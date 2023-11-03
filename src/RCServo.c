@@ -10,7 +10,8 @@
 /*******************************************************************************
 *						        GLOBAL VARIABLES    						   *
 *******************************************************************************/
-int RCServoAngle = SERVO_HOME;
+int G_RCServoAngle = SERVO_HOME;
+int G_RCServoModifier = SERVO_STOP;
 
 /*******************************************************************************
 *						LOCAL CONSTANTS AND VARIABLES						   *

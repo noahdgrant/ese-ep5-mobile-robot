@@ -9,7 +9,14 @@
 #define __Ultrasonic_H
 
 #include <stdint.h>
+
 #include "../stm32-base/CMSIS/inc/stm32f303xe.h"
+#include "Utility.h"
+#include "DCMotor.h"
+
+#define MIN_DISTANCE 8
+
+extern uint32_t G_UltraEcho;
 
 void Ultra_Init(void);
 void Ultra_StartTrigger(void);

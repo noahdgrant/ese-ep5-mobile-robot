@@ -10,7 +10,7 @@
 /*******************************************************************************
 *					          GLOBAL VARIABLES                                 *
 *******************************************************************************/
-volatile uint8_t StepperStep = STEPPER_STOP;
+volatile uint8_t G_StepperStep = STEPPER_STOP;
 
 /*******************************************************************************
 *					    LOCAL CONSTANTS AND VARIABLES                          *
@@ -124,26 +124,28 @@ void Stepper_Step(uint8_t stepType){
 		}
 	}
 
-    Stepper_Ouput(stepPatterns[0x7 & stepCounter]);		// & with 0x7 because we just want the lower 3 bits
+    Stepper_Ouput(stepPatterns[0x7 & stepCounter]);		// & with 0x7 because we just want the lower 3 bits	
 }
 
 uint8_t Stepper_Range(void) {
     uint8_t rangeCount = 0;
 	
-    StepperStep = STEPPER_CW_FULL_STEP;
-    while(StepperStep != 0){
-        Stepper_Step(STEPPER_CW_FULL_STEP);
-		Delay_ms(5);
-    }
+    G_StepperStep = STEPPER_CW_FULL_STEP;
+	if(LimitSwitch_PressCheck(RIGHT)){
+		while(G_StepperStep != 0){
+			Stepper_Step(STEPPER_CW_FULL_STEP);
+			Delay_ms(5);
+		}
+	}
 
-	StepperStep = STEPPER_CCW_FULL_STEP;
-    while(StepperStep != 0){
+	G_StepperStep = STEPPER_CCW_FULL_STEP;
+    while(G_StepperStep != 0){
         rangeCount++;
         Stepper_Step(STEPPER_CCW_FULL_STEP);
 		Delay_ms(5);
     }
     
-	StepperStep = STEPPER_STOP;
+	G_StepperStep = STEPPER_STOP;
     for(int i = 0; i < rangeCount/2; i++){
         Stepper_Step(STEPPER_CW_FULL_STEP);
 		Delay_ms(5);
@@ -151,3 +153,20 @@ uint8_t Stepper_Range(void) {
     
     return rangeCount;
 }
+
+void EXTI9_5_IRQHandler(void) {
+    // Left limit switch
+    if ((EXTI->PR & EXTI_PR_PIF5) != 0) {
+        G_StepperStep = 0;
+        // Cleared flag by writing 1
+        EXTI->PR |= EXTI_PR_PIF5;
+    }
+    
+    // Right limit switch
+    else if ((EXTI->PR & EXTI_PR_PIF6) != 0) {
+        G_StepperStep = 0;
+        // Cleared flag by writing 1
+        EXTI->PR |= EXTI_PR_PIF6;
+    }
+}
+

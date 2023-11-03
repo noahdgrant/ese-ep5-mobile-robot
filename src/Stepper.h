@@ -11,6 +11,8 @@
 #include "../stm32-base/CMSIS/inc/stm32f303xe.h"
 #include "Utility.h"
 #include "UART.h"
+#include "LimitSwitch.h"
+#include "Ultrasonic.h"
 
 #define STEPPER_STOP 0
 #define STEPPER_CW_FULL_STEP 1
@@ -18,7 +20,7 @@
 #define STEPPER_CW_HALF_STEP 3
 #define STEPPER_CCW_HALF_STEP 4
 
-extern volatile uint8_t StepperStep;
+extern volatile uint8_t G_StepperStep;
 
 void Stepper_Init(void);
 void Stepper_Step(uint8_t stepType);

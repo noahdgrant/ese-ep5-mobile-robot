@@ -1,8 +1,8 @@
 /*******************************************************************************
 * Name: main.c (client)
 * Author(s): Noah Grant, Wyatt Richard
-* Date: September 15, 2023
-* Description: Encoder control for mobile robot.
+* Date: November 3, 2023
+* Description: Mobile robot main control loop.
 *******************************************************************************/
 
 #include "SysClock.h"
@@ -19,138 +19,184 @@
 #include "LimitSwitch.h"
 #include "PID.h"
 
-int main(void) {	
-	// INITIALIZE
-	System_Clock_Init();
-	SystemCoreClockUpdate();
-	
-	USART3_Init();
-	Stepper_Init();
-	RCServo_Init();
-	LED_Init();
-	KeyPad_Init();
-	Ultra_Init();
-	DCMotor_Init();
-	LCD_Init();
-	Encoder_Init();
-	LimitSwitch_Init();
+int main(void) {
+    // INITIALIZE
+    System_Clock_Init();
+    SystemCoreClockUpdate();
+
+    USART3_Init();
+    Stepper_Init();
+    RCServo_Init();
+    LED_Init();
+    KeyPad_Init();
+    Ultra_Init();
+    DCMotor_Init();
+    LCD_Init();
+    Encoder_Init();
+    LimitSwitch_Init();
     PID_Init();
 
-	Stepper_Range();
+    Stepper_Range();
     RCServo_SetAngle(SERVO_HOME);
 	
-	// Startup menu
-	USART3_printf("--- Engineering Project 5 Mobile Robot ---\n");
-	USART3_printf("Robot initialized...\n");
-
-
-	// PROGRAM LOOP
-	while(1) {
-        switch(USART3_dequeue()){
+    // PROGRAM LOOP
+    while (1) {
+        Ultra_StartTrigger();
+        
+        switch (USART3_dequeue()) {
             // Stop robot
-            case 'S':{
-                StepperStep = STEPPER_STOP;
-                DCMotorLeftDir = DCMOTOR_STOP;
-                DCMotorRightDir = DCMOTOR_STOP;
-                leftEncoderSetpoint = 0;
-                rightEncoderSetpoint = 0;
+            case 'S': {
+                G_StepperStep = STEPPER_STOP;
+                G_DCMotorLeftDir = DCMOTOR_STOP;
+                G_DCMotorRightDir = DCMOTOR_STOP;
+                G_leftEncoderSetpoint = DCMOTOR_SPEED_BASE;
+                G_rightEncoderSetpoint = DCMOTOR_SPEED_BASE;
                 break;
             }
 
-            // Stepper
-            case '0':{
-                StepperStep = STEPPER_CW_FULL_STEP;
-                break;
-            }
-            case '1':{
-                StepperStep = STEPPER_CCW_FULL_STEP;
-                break;
-            }
-            case '2':{
-                StepperStep = STEPPER_STOP;
-                break;
-            }
-
-            // Servo
-            case '3':{
-                RCServoAngle -= SERVO_DECREASE;
-                break;
-            }
-            case '4':{
-                RCServoAngle += SERVO_INCREASE;
-                break;
-            }
-            case '5':{
-                RCServoAngle = SERVO_HOME;
-                break;
-            }
-            
             // DC motors
-            case '6':{
-                DCMotorLeftDir = DCMOTOR_FWD;
-                DCMotorRightDir = DCMOTOR_FWD;
+            case '0': {
+                G_DCMotorLeftDir = DCMOTOR_FWD;
+                G_DCMotorRightDir = DCMOTOR_FWD;
                 break;
             }
-            case '7':{
-                DCMotorLeftDir = DCMOTOR_BWD;
-                DCMotorRightDir = DCMOTOR_BWD;
+            case '1': {
+                G_DCMotorLeftDir = DCMOTOR_STOP;
+                G_DCMotorRightDir = DCMOTOR_FWD;
                 break;
             }
-            case '8':{
-                DCMotorLeftDir = DCMOTOR_STOP;
-                DCMotorRightDir = DCMOTOR_FWD;
+            case '2': {
+                G_DCMotorLeftDir = DCMOTOR_FWD;
+                G_DCMotorRightDir = DCMOTOR_STOP;
                 break;
             }
-            case '9':{
-                DCMotorLeftDir = DCMOTOR_STOP;
-                DCMotorRightDir = DCMOTOR_FWD;
+            case '3': {
+                G_DCMotorLeftDir = DCMOTOR_BWD;
+                G_DCMotorRightDir = DCMOTOR_FWD;
                 break;
             }
-            case 'q':{
-                DCMotorLeftDir = DCMOTOR_STOP;
-                DCMotorRightDir = DCMOTOR_STOP;
+            case '4': {
+                G_DCMotorLeftDir = DCMOTOR_FWD;
+                G_DCMotorRightDir = DCMOTOR_BWD;
+                break;
+            }
+            case '5': {
+                G_DCMotorLeftDir = DCMOTOR_BWD;
+                G_DCMotorRightDir = DCMOTOR_BWD;
+                break;
+            }
+            case '6': {
+                G_DCMotorLeftDir = DCMOTOR_STOP;
+                G_DCMotorRightDir = DCMOTOR_BWD;
+                break;
+            }
+            case '7': {
+                G_DCMotorLeftDir = DCMOTOR_BWD;
+                G_DCMotorRightDir = DCMOTOR_STOP;
+                break;
+            }
+            case 'A':{
+                G_DCMotorLeftDir = DCMOTOR_STOP;
+                G_DCMotorRightDir = DCMOTOR_STOP;
+                G_leftEncoderSetpoint = DCMOTOR_SPEED_BASE;
+                G_rightEncoderSetpoint = DCMOTOR_SPEED_BASE;
                 break;
             }
 
             // Speed
-            case 'w': {
-                leftEncoderSetpoint += DCMOTOR_SPEED_INC;
+            case '8': {
+                G_leftEncoderSetpoint += DCMOTOR_SPEED_INC;
+                G_rightEncoderSetpoint += DCMOTOR_SPEED_INC;
+
+                if (G_leftEncoderSetpoint > DCMOTOR_SPEED_MAX) {
+                    G_leftEncoderSetpoint = DCMOTOR_SPEED_MAX;
+                }
+                
+                if (G_rightEncoderSetpoint > DCMOTOR_SPEED_MAX) {
+                    G_rightEncoderSetpoint = DCMOTOR_SPEED_MAX;
+                }
+
                 break;
             }
-            case 'e': {
-                leftEncoderSetpoint -= DCMOTOR_SPEED_DEC;
-                break;
-            }
-            case 'r': {
-                rightEncoderSetpoint += DCMOTOR_SPEED_INC;
-                break;
-            }
-            case 't': {
-                rightEncoderSetpoint -= DCMOTOR_SPEED_DEC;
+            case '9': {
+                G_leftEncoderSetpoint -= DCMOTOR_SPEED_DEC;
+                G_rightEncoderSetpoint -= DCMOTOR_SPEED_DEC;
+                
+                if (G_leftEncoderSetpoint < DCMOTOR_SPEED_MIN) {
+                    G_leftEncoderSetpoint = DCMOTOR_SPEED_MIN;
+                }
+                
+                if (G_rightEncoderSetpoint < DCMOTOR_SPEED_MIN) {
+                    G_rightEncoderSetpoint = DCMOTOR_SPEED_MIN;
+                }
+
                 break;
             }
 
+            // Servo
+            case 'B': {
+                G_RCServoAngle = SERVO_HOME;
+                Stepper_Range();
+                break;
+            }
+            case 'C': {
+				G_RCServoModifier = SERVO_INCREASE;
+                break;
+            }
+            case 'D': {
+			    G_RCServoModifier = SERVO_DECREASE;
+                break;
+            }
+
+            // Stepper
+            case 'E': {
+				if (LimitSwitch_PressCheck(RIGHT)) {
+					G_StepperStep = STEPPER_CW_FULL_STEP;
+				}
+
+                break;
+            }
+            case 'F': {
+				if (LimitSwitch_PressCheck(LEFT)) {
+					G_StepperStep = STEPPER_CCW_FULL_STEP;
+				}
+
+                break;
+            }
+            case 'G': {
+                G_RCServoModifier = SERVO_STOP;
+                break;
+            }
+            case 'H': {
+                G_StepperStep = STEPPER_STOP;
+                break;
+            }
+
+
             // Ultrasonic
-            case 'A':{
-                Ultra_StartTrigger();
-                while(!Ultra_EchoRx());
-                USART3_printf("User Input: 5");
+            case 'I': {
                 USART3_printf("\nUltrasonic: %dcm", Ultra_ReadSensor());
                 break;
             }
-
+    
             // Invalid command
             default: {
                 break;
             }
         }
 
-        DCMotor_SetDirs(DCMotorLeftDir, DCMotorRightDir);
-        Stepper_Step(StepperStep);
-        RCServo_SetAngle(RCServoAngle);
-
-        USART3_printf("Left: s = %d, m= %d, p = %d, pwm = %d\n", leftEncoderSetpoint, leftEncoderSpeed, Global_EncoderPeriod[LEFT], PIDLeftEncoder.out);
-        USART3_printf("Right: s = %d, m = %d, p = %d, pwm = %d\n", rightEncoderSetpoint, rightEncoderSpeed, Global_EncoderPeriod[RIGHT], PIDRightEncoder.out);
-	}
+		G_RCServoAngle += G_RCServoModifier;
+		if (G_RCServoAngle < SERVO_MIN) {
+			G_RCServoAngle = SERVO_MIN;
+		}
+		else if (G_RCServoAngle > SERVO_MAX) {
+			G_RCServoAngle = SERVO_MAX;
+		}
+		
+        DCMotor_SetDirs(G_DCMotorLeftDir, G_DCMotorRightDir);
+        Stepper_Step(G_StepperStep);
+        RCServo_SetAngle(G_RCServoAngle);
+        Delay_ms(5);
+    }
 }
-	
+
