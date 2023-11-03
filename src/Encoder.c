@@ -8,7 +8,7 @@
 #include "Encoder.h"
 
 /*******************************************************************************
-*								GLOBAL VARIABLES							   *
+*                               GLOBAL VARIABLES                               *
 *******************************************************************************/
 volatile uint32_t G_EncoderPeriod[2] = {0, 0};     // [0] = left, [1] = right
 volatile uint32_t G_leftEncoderSpeed = 0;
@@ -17,14 +17,14 @@ int G_leftEncoderSetpoint = DCMOTOR_SPEED_BASE;
 int G_rightEncoderSetpoint = DCMOTOR_SPEED_BASE;
 
 /*******************************************************************************
-*								LOCAL VARIABLES 							   *
+*                               LOCAL VARIABLES                                *
 *******************************************************************************/
-static volatile uint32_t leftEncoder[2] = {0, 0};		// [0] = current, [1] = previous
-static volatile uint32_t rightEncoder[2] = {0, 0};		// [0] = current, [1] = previous
+static volatile uint32_t leftEncoder[2] = {0, 0};       // [0] = current, [1] = previous
+static volatile uint32_t rightEncoder[2] = {0, 0};      // [0] = current, [1] = previous
 static volatile uint8_t overFlowCounter[2] = {0, 0};           // [0] = left, [1] = right
 
 /*******************************************************************************
-*						    	PUBLIC FUNCTIONS							   *
+*                               PUBLIC FUNCTIONS                               *
 *******************************************************************************/
 /*******************************************************************************
 * Encoder_Init() - Initialize GPIOA PA0 (left) and PA1 (right) for encoders.
@@ -32,57 +32,57 @@ static volatile uint8_t overFlowCounter[2] = {0, 0};           // [0] = left, [1
 * No return value.
 *******************************************************************************/
 void Encoder_Init(void){
-	// PA0 for Input Capture on Left Wheel
-	// PA1 for Input Capture on Right Wheel
+    // PA0 for Input Capture on Left Wheel
+    // PA1 for Input Capture on Right Wheel
 
-	
-	// Configure GPIOA P0 and P1
-	ENABLE_GPIO_CLOCK(A);							// Enable GPIO Port A
-	GPIO_MODER_SET(A, 0, GPIO_MODE_AF);
-	GPIO_MODER_SET(A, 1, GPIO_MODE_AF);
-	GPIO_PUPDR_SET(A, 0, GPIO_PUPD_NO);		
-	GPIO_PUPDR_SET(A, 1, GPIO_PUPD_NO);
-	GPIO_AFR_SET(A, 0, 1);							// TIM2 CH1
-	GPIO_AFR_SET(A, 1, 1);							// TIM2 CH2
-	
-	
-	// Configure TIM2 for Both CH1 and CH2 inputs
-	SET_BITS(RCC->APB1ENR, RCC_APB1ENR_TIM2EN);		// Enable TIM2 on APB1
-	SET_BITS(TIM2->PSC, 71UL);						// Set prescaler to count in 1us
-		// Timer Period = (Prescaler + 1) / SystemClockFreq
-		// 1us = (Prescaler + 1) / 72MHz
-		// (Prescaler + 1) = 72
-		// Prescaler = 71
+
+    // Configure GPIOA P0 and P1
+    ENABLE_GPIO_CLOCK(A);                           // Enable GPIO Port A
+    GPIO_MODER_SET(A, 0, GPIO_MODE_AF);
+    GPIO_MODER_SET(A, 1, GPIO_MODE_AF);
+    GPIO_PUPDR_SET(A, 0, GPIO_PUPD_NO);
+    GPIO_PUPDR_SET(A, 1, GPIO_PUPD_NO);
+    GPIO_AFR_SET(A, 0, 1);                          // TIM2 CH1
+    GPIO_AFR_SET(A, 1, 1);                          // TIM2 CH2
+
+
+    // Configure TIM2 for Both CH1 and CH2 inputs
+    SET_BITS(RCC->APB1ENR, RCC_APB1ENR_TIM2EN);     // Enable TIM2 on APB1
+    SET_BITS(TIM2->PSC, 71UL);                      // Set prescaler to count in 1us
+        // Timer Period = (Prescaler + 1) / SystemClockFreq
+        // 1us = (Prescaler + 1) / 72MHz
+        // (Prescaler + 1) = 72
+        // Prescaler = 71
     SET_BITS(TIM2->ARR, 0xFFFFUL);
 
-	CLEAR_BITS(TIM2->CR1, TIM_CR1_DIR);				// Set counting direction to upcounting
-    CLEAR_BITS(TIM2->CR1, TIM_CR1_URS);			    // Enable update
+    CLEAR_BITS(TIM2->CR1, TIM_CR1_DIR);             // Set counting direction to upcounting
+    CLEAR_BITS(TIM2->CR1, TIM_CR1_URS);             // Enable update
     CLEAR_BITS(TIM2->CR1, TIM_CR1_UDIS);            // Set update request source
-	
-	// Configure TIM2 CH1 for input capture on Left Encoder
-	SET_BITS(TIM2->CCMR1, TIM_CCMR1_CC1S_0);						// Input capture mode for CH1 (normal mode  0%01)
-	SET_BITS(TIM2->CCER, TIM_CCER_CC1E);							// ENABLE_GPIO_CLOCK input capture for CH1
-	CLEAR_BITS(TIM2->CCER, TIM_CCER_CC1P & TIM_CCER_CC1NP);			// Detect rising edges (by clearing both input capture mode bits)
-	CLEAR_BITS(TIM2->CCR1, TIM_CCR1_CCR1);							// Clear garbage values from CCR1
-	
-	
-	// Configure TIM2 CH2 for input capture on Right Encoder
-	SET_BITS(TIM2->CCMR1, TIM_CCMR1_CC2S_0);						// Input capture mode for CH2 (normal mode  0%01)
-	SET_BITS(TIM2->CCER, TIM_CCER_CC2E);							// ENABLE_GPIO_CLOCK input capture for CH2
-	CLEAR_BITS(TIM2->CCER, TIM_CCER_CC2P & TIM_CCER_CC2NP);			// Detect rising edges (by clearing both input capture mode bits)
-	CLEAR_BITS(TIM2->CCR2, TIM_CCR2_CCR2);							// Clear garbage values from CCR2
 
-	
-	// Configure TIM2 to generate interrupts and configure NVIC to respond
-	SET_BITS(TIM2->DIER, TIM_DIER_CC1IE);						    // Enable encoder CH1 to trigger IRQ
-	SET_BITS(TIM2->DIER, TIM_DIER_CC2IE);						    // Enable encoder CH2 to trigger IRQ
-    SET_BITS(TIM2->DIER, TIM_DIER_UIE);						        // Enable timer overflow to trigger IRQ
-	NVIC_EnableIRQ(TIM2_IRQn);							            // Enable TIM2 IRQ (TIM2_IRQn) in NVIC
-	NVIC_SetPriority(TIM2_IRQn, ENCODER_PRIORITY);	                // Set NVIC priority
-	 
-	// Start TIM2 CH1 and CH2 Input Captures
-	SET_BITS(TIM2->EGR, TIM_EGR_UG);						        // Force an update event to preload all the registers
-	SET_BITS(TIM2->CR1, TIM_CR1_CEN);						        // Enable TIM2 to start counting
+    // Configure TIM2 CH1 for input capture on Left Encoder
+    SET_BITS(TIM2->CCMR1, TIM_CCMR1_CC1S_0);                        // Input capture mode for CH1 (normal mode  0%01)
+    SET_BITS(TIM2->CCER, TIM_CCER_CC1E);                            // ENABLE_GPIO_CLOCK input capture for CH1
+    CLEAR_BITS(TIM2->CCER, TIM_CCER_CC1P & TIM_CCER_CC1NP);         // Detect rising edges (by clearing both input capture mode bits)
+    CLEAR_BITS(TIM2->CCR1, TIM_CCR1_CCR1);                          // Clear garbage values from CCR1
+
+
+    // Configure TIM2 CH2 for input capture on Right Encoder
+    SET_BITS(TIM2->CCMR1, TIM_CCMR1_CC2S_0);                        // Input capture mode for CH2 (normal mode  0%01)
+    SET_BITS(TIM2->CCER, TIM_CCER_CC2E);                            // ENABLE_GPIO_CLOCK input capture for CH2
+    CLEAR_BITS(TIM2->CCER, TIM_CCER_CC2P & TIM_CCER_CC2NP);         // Detect rising edges (by clearing both input capture mode bits)
+    CLEAR_BITS(TIM2->CCR2, TIM_CCR2_CCR2);                          // Clear garbage values from CCR2
+
+
+    // Configure TIM2 to generate interrupts and configure NVIC to respond
+    SET_BITS(TIM2->DIER, TIM_DIER_CC1IE);                           // Enable encoder CH1 to trigger IRQ
+    SET_BITS(TIM2->DIER, TIM_DIER_CC2IE);                           // Enable encoder CH2 to trigger IRQ
+    SET_BITS(TIM2->DIER, TIM_DIER_UIE);                             // Enable timer overflow to trigger IRQ
+    NVIC_EnableIRQ(TIM2_IRQn);                                // Enable TIM2 IRQ (TIM2_IRQn) in NVIC
+    NVIC_SetPriority(TIM2_IRQn, ENCODER_PRIORITY);     // Set NVIC priority
+
+    // Start TIM2 CH1 and CH2 Input Captures
+    SET_BITS(TIM2->EGR, TIM_EGR_UG);                                // Force an update event to preload all the registers
+    SET_BITS(TIM2->CR1, TIM_CR1_CEN);                               // Enable TIM2 to start counting
 }
 
 /*******************************************************************************
@@ -91,23 +91,23 @@ void Encoder_Init(void){
 * No return value.
 *******************************************************************************/
 void TIM2_IRQHandler(void){
-	// Left wheel interrupt
-	if(IS_BIT_SET(TIM2->SR, TIM_SR_CC1IF)) {
-		leftEncoder[1] = leftEncoder[0];        // Timer count (us) at last interrupt
-		leftEncoder[0] = TIM2->CCR1;            // Timer count (us) at current interrupt
+    // Left wheel interrupt
+    if(IS_BIT_SET(TIM2->SR, TIM_SR_CC1IF)) {
+        leftEncoder[1] = leftEncoder[0];        // Timer count (us) at last interrupt
+        leftEncoder[0] = TIM2->CCR1;            // Timer count (us) at current interrupt
         G_EncoderPeriod[LEFT] = leftEncoder[0] - leftEncoder[1] + (overFlowCounter[LEFT] * MAX_TIME_US);
         G_leftEncoderSpeed = (UM_PER_VANE * 100) / G_EncoderPeriod[LEFT]; // um/us = m/s -> *100 = cm/s
         overFlowCounter[0] = 0;                 // left overflow counter
-	}
-	
-	// Right wheel interrupt
-	if(IS_BIT_SET(TIM2->SR, TIM_SR_CC2IF)){
-		rightEncoder[1] = rightEncoder[0];
-		rightEncoder[0] = TIM2->CCR2;
+    }
+
+    // Right wheel interrupt
+    if(IS_BIT_SET(TIM2->SR, TIM_SR_CC2IF)){
+        rightEncoder[1] = rightEncoder[0];
+        rightEncoder[0] = TIM2->CCR2;
         G_EncoderPeriod[RIGHT] = rightEncoder[0] - rightEncoder[1] + (overFlowCounter[RIGHT] * MAX_TIME_US);
         G_rightEncoderSpeed = (UM_PER_VANE * 100) / G_EncoderPeriod[RIGHT]; // um/us = m/s -> *100 = cm/s 
         overFlowCounter[1] = 0;       // right overflow counter
-	}
+    }
 
     // Timer overflow
     if(IS_BIT_SET(TIM2->SR, TIM_SR_UIF)){

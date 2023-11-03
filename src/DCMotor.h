@@ -6,13 +6,13 @@
 *******************************************************************************/
 
 #ifndef DCMOTOR_H
-#define	DCMOTOR_H
+#define DCMOTOR_H
 
 #include "../stm32-base/CMSIS/inc/stm32f303xe.h"
 #include "Utility.h"
 
 #define DCMOTOR_LEFT    0UL
-#define DCMOTOR_RIGHT	1UL
+#define DCMOTOR_RIGHT   1UL
 #define DCMOTOR_STOP    0UL
 #define DCMOTOR_FWD     1UL
 #define DCMOTOR_BWD     2UL

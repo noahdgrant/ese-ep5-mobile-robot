@@ -16,27 +16,27 @@
 #include "Encoder.h"
 
 typedef struct {
-	// Controller gains
-	int Kp;
-	int Ki;
+    // Controller gains
+    int Kp;
+    int Ki;
 
-	// Output limits
-	int limMin;
-	int limMax;
-	
-	// Integrator limits
-	int limMinInt;
-	int limMaxInt;
+    // Output limits
+    int limMin;
+    int limMax;
 
-	// Time between encoder interrupts (deltaT)
-	int deltaT;
+    // Integrator limits
+    int limMinInt;
+    int limMaxInt;
 
-	// Controller "memory"
-	int integrator;
-	int prevError;
+    // Time between encoder interrupts (deltaT)
+    int deltaT;
 
-	// Controller output
-	int out;
+    // Controller "memory"
+    int integrator;
+    int prevError;
+
+    // Controller output
+    int out;
 
 } PIDController;
 

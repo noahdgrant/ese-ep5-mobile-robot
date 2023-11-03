@@ -78,7 +78,7 @@ int PID_Update(PIDController *pid, int setpoint, int measurement, int deltaT) {
     // Integrator
     pid->integrator = pid->integrator + (error * deltaT)/1000;
 
-	// Anti-wind-up via integrator clamping
+    // Anti-wind-up via integrator clamping
     if (pid->integrator > pid->limMaxInt) {
         pid->integrator = pid->limMaxInt;
     }
@@ -86,7 +86,7 @@ int PID_Update(PIDController *pid, int setpoint, int measurement, int deltaT) {
         pid->integrator = pid->limMinInt;
     }
 
-	
+
     // Compute output and apply limits
     pid->out = pid->Kp * proportional + pid->Ki * pid->integrator;
 

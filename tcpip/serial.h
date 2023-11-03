@@ -1,7 +1,7 @@
 // Serial header file
 
 #ifndef SERIAL_H
-#define	 SERIAL_H
+#define SERIAL_H
 
 int Serial_Open(void);
 int Serial_Write(int serial_port, char* buf);

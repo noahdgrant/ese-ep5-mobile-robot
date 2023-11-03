@@ -7,7 +7,7 @@
 *******************************************************************************/
 
 #ifndef DCMOTOR_H
-#define	DCMOTOR_H
+#define DCMOTOR_H
 
 int read_event(int fd, struct js_event *event);
 

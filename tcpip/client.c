@@ -28,9 +28,9 @@
 char buffer[BUFSIZ];
 
 int main (int argc, char *argv[]) {
-	int client_socket;
-	struct sockaddr_in server_addr;
-	struct hostent *host;
+    int client_socket;
+    struct sockaddr_in server_addr;
+    struct hostent *host;
 
     // variables for joystick
     const char *device; // path to controller file
@@ -42,10 +42,10 @@ int main (int argc, char *argv[]) {
     size_t axis;
 
     // ensure port and IP were entered
-	if (argc < 3) {
-		printf ("usage: ./client IP_ADDRESS PORT_NUMBER\n");
-		return 1;
-	}
+    if (argc < 3) {
+        printf ("usage: ./client IP_ADDRESS PORT_NUMBER\n");
+        return 1;
+    }
 
     // check if controller file was specified
     if (argc > 3){
@@ -67,35 +67,35 @@ int main (int argc, char *argv[]) {
      * get a socket for communications
      */
 
-	if ((client_socket = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
-		printf ("grrr, can't get a client socket!\n");
-		return 3;
-	}	/* endif */
+    if ((client_socket = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
+        printf ("grrr, can't get a client socket!\n");
+        return 3;
+    }   /* endif */
 
-	/*
-	 * initialize struct to get a socket to host
-	 */
-	
-	memset (&server_addr, 0, sizeof (server_addr));
-	server_addr.sin_addr.s_addr = inet_addr(argv[1]);
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons (atoi(argv[2]));
+    /*
+     * initialize struct to get a socket to host
+     */
 
-	/*
-	 * attempt a connection to server
-	 */
+    memset (&server_addr, 0, sizeof (server_addr));
+    server_addr.sin_addr.s_addr = inet_addr(argv[1]);
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons (atoi(argv[2]));
 
-	if (connect (client_socket, (struct sockaddr *)&server_addr,
-	sizeof (server_addr)) < 0) {
-		printf ("grrr, can't connet to server!\n");
-		close (client_socket);
-		return 4;
-	}	/* endif */
+    /*
+     * attempt a connection to server
+     */
 
-	/*
-	 * now that we have a connection, get a commandline from
-	 * the user, and fire it off to the server
-	 */
+    if (connect (client_socket, (struct sockaddr *)&server_addr,
+    sizeof (server_addr)) < 0) {
+        printf ("grrr, can't connet to server!\n");
+        close (client_socket);
+        return 4;
+    }   /* endif */
+
+    /*
+     * now that we have a connection, get a commandline from
+     * the user, and fire it off to the server
+     */
     while (read_event(js, &event) == 0) {
         if(event.type==JS_EVENT_AXIS){
             axis = get_axis_state(&event, axes);
@@ -171,7 +171,7 @@ int main (int argc, char *argv[]) {
                 else{
                     angle = (int)(1000 * atan2((double)axes[axis].y, (double)axes[axis].x));
 
-					if(angle >=-392 && angle<=392 && prevAxisState[axis] != 1){
+                    if(angle >=-392 && angle<=392 && prevAxisState[axis] != 1){
                         printf("Pan Right\n"); // max value of 32767
                         strcpy(buffer, "EG");
                         write (client_socket, buffer, strlen (buffer));
@@ -219,31 +219,6 @@ int main (int argc, char *argv[]) {
                         write (client_socket, buffer, strlen (buffer));
                         prevAxisState[axis] = 8;
                     }
-					/*
-                    if(angle >=-2356 && angle<=-785 && prevAxisState[axis] != 1){
-                        printf("Up\n"); // max value of 32767
-                        strcpy(buffer, "D");
-                        write (client_socket, buffer, strlen (buffer));
-                        prevAxisState[axis] = 1;
-                    }
-                    else if(angle >-785 && angle<785 && prevAxisState[axis] != 2){
-                        printf("Right\n"); // max value of 32767
-                        strcpy(buffer, "E");
-                        write (client_socket, buffer, strlen (buffer));
-                        prevAxisState[axis] = 2;
-                    }
-                    else if(angle >=785 && angle<=2356 && prevAxisState[axis] != 3){
-                        printf("Down\n"); // max value of 32767
-                        strcpy(buffer, "C");
-                        write (client_socket, buffer, strlen (buffer));
-                        prevAxisState[axis] = 3;
-                    }
-                    else if((angle >2356 || angle<-2356) && prevAxisState[axis] != 4){
-                        printf("Left\n"); // max value of 32767
-                        strcpy(buffer, "F");
-                        write (client_socket, buffer, strlen (buffer));
-                        prevAxisState[axis] = 4;
-                    }*/
                 }
             }
             else if(axis == 2) { // right Joystick
@@ -283,4 +258,4 @@ int main (int argc, char *argv[]) {
     //send shutdown command
     close(js);
     return 0;
-}	/* end main */
+}   /* end main */

@@ -85,13 +85,13 @@ int Serial_Open(void) {
     tty.c_cc[VTIME] = 10;    // Wait for up to 1s (10 deciseconds), returning as soon as any data is received.
     tty.c_cc[VMIN] = 0;
 
-    // VMIN = 0, VTIME = 0: 	No blocking, return immediately with what is available
-    // VMIN > 0, VTIME = 0: 	This will make read() always wait for bytes 
-    //							(exactly how many is determined by VMIN), so read() could block indefinitely.
-    // VMIN = 0, VTIME > 0: 	This is a blocking read of any number chars with a maximum timeout (given by VTIME). 
-    //							read() will block until either any amount of data is available, or the timeout occurs. 
-    // VMIN > 0, VTIME > 0: 	Block until either VMIN characters have been received, or VTIME after first character has elapsed. 
-    //							Note that the timeout for VTIME does not begin until the first character is received.
+    // VMIN = 0, VTIME = 0:     No blocking, return immediately with what is available
+    // VMIN > 0, VTIME = 0:     This will make read() always wait for bytes
+    //                          (exactly how many is determined by VMIN), so read() could block indefinitely.
+    // VMIN = 0, VTIME > 0:     This is a blocking read of any number chars with a maximum timeout (given by VTIME).
+    //                          read() will block until either any amount of data is available, or the timeout occurs.
+    // VMIN > 0, VTIME > 0:     Block until either VMIN characters have been received, or VTIME after first character has elapsed.
+    //                          Note that the timeout for VTIME does not begin until the first character is received.
 
 
     // Set in/out baud rate to be 9600
