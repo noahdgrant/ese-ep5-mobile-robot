@@ -120,11 +120,11 @@ int main(void) {
                 G_leftEncoderSetpoint -= DCMOTOR_SPEED_DEC;
                 G_rightEncoderSetpoint -= DCMOTOR_SPEED_DEC;
                 
-                if (G_leftEncoderSetpoint > DCMOTOR_SPEED_MIN) {
+                if (G_leftEncoderSetpoint < DCMOTOR_SPEED_MIN) {
                     G_leftEncoderSetpoint = DCMOTOR_SPEED_MIN;
                 }
                 
-                if (G_rightEncoderSetpoint > DCMOTOR_SPEED_MIN) {
+                if (G_rightEncoderSetpoint < DCMOTOR_SPEED_MIN) {
                     G_rightEncoderSetpoint = DCMOTOR_SPEED_MIN;
                 }
 
@@ -147,27 +147,31 @@ int main(void) {
 
             // Stepper
             case 'E': {
-				if (!LimitSwitch_PressCheck(RIGHT)) {
+				if (LimitSwitch_PressCheck(RIGHT)) {
 					G_StepperStep = STEPPER_CW_FULL_STEP;
 				}
 
                 break;
             }
             case 'F': {
-				if (!LimitSwitch_PressCheck(LEFT)) {
+				if (LimitSwitch_PressCheck(LEFT)) {
 					G_StepperStep = STEPPER_CCW_FULL_STEP;
 				}
 
                 break;
             }
             case 'G': {
-                G_StepperStep = STEPPER_STOP;
                 G_RCServoModifier = SERVO_STOP;
                 break;
             }
-
-            // Ultrasonic
             case 'H': {
+                G_StepperStep = STEPPER_STOP;
+                break;
+            }
+
+
+                // Ultrasonic
+            case 'I': {
                 Ultra_StartTrigger();
                 while(!Ultra_EchoRx());
                 USART3_printf("User Input: 5");

@@ -131,7 +131,7 @@ uint8_t Stepper_Range(void) {
     uint8_t rangeCount = 0;
 	
     G_StepperStep = STEPPER_CW_FULL_STEP;
-	if(!LimitSwitch_PressCheck(RIGHT)){
+	if(LimitSwitch_PressCheck(RIGHT)){
 		while(G_StepperStep != 0){
 			Stepper_Step(STEPPER_CW_FULL_STEP);
 			Delay_ms(5);

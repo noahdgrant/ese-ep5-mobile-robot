@@ -164,16 +164,16 @@ int main (int argc, char *argv[]) {
             else if(axis == 1) { // right Joystick
                 if(axes[axis].x == 0 && axes[axis].y == 0){
                     printf("Stop moving\n"); // max value of 32767
-                    strcpy(buffer, "G");
+                    strcpy(buffer, "GH");
                     write (client_socket, buffer, strlen (buffer));
                     prevAxisState[axis] = 0;
                 }
                 else{
                     angle = (int)(1000 * atan2((double)axes[axis].y, (double)axes[axis].x));
-					/*
+
 					if(angle >=-392 && angle<=392 && prevAxisState[axis] != 1){
                         printf("Pan Right\n"); // max value of 32767
-                        strcpy(buffer, "E");
+                        strcpy(buffer, "EG");
                         write (client_socket, buffer, strlen (buffer));
                         prevAxisState[axis] = 1;
                     }
@@ -185,7 +185,7 @@ int main (int argc, char *argv[]) {
                     }
                     else if(angle >=1178 && angle<=1963 && prevAxisState[axis] != 3){
                         printf("Up\n"); // max value of 32767
-                        strcpy(buffer, "D");
+                        strcpy(buffer, "DH");
                         write (client_socket, buffer, strlen (buffer));
                         prevAxisState[axis] = 3;
                     }
@@ -197,7 +197,7 @@ int main (int argc, char *argv[]) {
                     }
                     else if((angle >=2748 || angle<=-2748) && prevAxisState[axis] != 5){
                         printf("Pan Left\n"); // max value of 32767
-                        strcpy(buffer, "F");
+                        strcpy(buffer, "FG");
                         write (client_socket, buffer, strlen (buffer));
                         prevAxisState[axis] = 5;
                     }
@@ -209,7 +209,7 @@ int main (int argc, char *argv[]) {
                     }
                     else if(angle >=-1963 &&angle<=-1178 && prevAxisState[axis] != 7){
                         printf("Down\n"); // max value of 32767
-                        strcpy(buffer, "C");
+                        strcpy(buffer, "CH");
                         write (client_socket, buffer, strlen (buffer));
                         prevAxisState[axis] = 7;
                     }
@@ -218,8 +218,8 @@ int main (int argc, char *argv[]) {
                         strcpy(buffer, "CE");
                         write (client_socket, buffer, strlen (buffer));
                         prevAxisState[axis] = 8;
-                    }*/
-					//*
+                    }
+					/*
                     if(angle >=-2356 && angle<=-785 && prevAxisState[axis] != 1){
                         printf("Up\n"); // max value of 32767
                         strcpy(buffer, "D");
@@ -243,7 +243,7 @@ int main (int argc, char *argv[]) {
                         strcpy(buffer, "F");
                         write (client_socket, buffer, strlen (buffer));
                         prevAxisState[axis] = 4;
-                    }//*/
+                    }*/
                 }
             }
             else if(axis == 2) { // right Joystick

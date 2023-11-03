@@ -67,11 +67,11 @@ uint8_t LimitSwitch_PressCheck(uint8_t direction){
     if(direction == RIGHT) { // Clockwise, Right
         // Check if ODR of PC6 is set
         if(IS_BIT_SET(GPIOC->IDR, GPIO_IDR_6)){
-            // If set, button is not pressed because of ACTIVE-LOW.
+            // If set, button is pressed.
             return(0);
         }
         else{
-            // If cleared, button is pressed.
+            // If cleared, button is not pressed.
             return(1);
         }
     }
