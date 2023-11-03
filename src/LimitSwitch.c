@@ -19,7 +19,7 @@ void LimitSwitch_Init(void){
     // Enable GPIO Port C
     ENABLE_GPIO_CLOCK(C);
     // left  -> PC5
-    // right -> pC6
+    // right -> PC6
 
     //Set PC5 to INPUT mode (00)
     GPIO_MODER_SET(C, 5, GPIO_MODE_IN);

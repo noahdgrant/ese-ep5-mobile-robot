@@ -12,6 +12,7 @@
 #include "Utility.h"
 #include "UART.h"
 #include "LimitSwitch.h"
+#include "Ultrasonic.h"
 
 #define STEPPER_STOP 0
 #define STEPPER_CW_FULL_STEP 1

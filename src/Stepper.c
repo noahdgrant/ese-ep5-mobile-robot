@@ -155,15 +155,18 @@ uint8_t Stepper_Range(void) {
 }
 
 void EXTI9_5_IRQHandler(void) {
-    if ((EXTI->PR & EXTI_PR_PIF5) != 0) { // left limit
+    // Left limit switch
+    if ((EXTI->PR & EXTI_PR_PIF5) != 0) {
         G_StepperStep = 0;
         // Cleared flag by writing 1
         EXTI->PR |= EXTI_PR_PIF5;
     }
     
-    else if ((EXTI->PR & EXTI_PR_PIF6) != 0) { // right limit
+    // Right limit switch
+    else if ((EXTI->PR & EXTI_PR_PIF6) != 0) {
         G_StepperStep = 0;
         // Cleared flag by writing 1
         EXTI->PR |= EXTI_PR_PIF6;
     }
 }
+

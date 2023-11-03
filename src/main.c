@@ -41,6 +41,8 @@ int main(void) {
 	
     // PROGRAM LOOP
     while (1) {
+        Ultra_StartTrigger();
+        
         switch (USART3_dequeue()) {
             // Stop robot
             case 'S': {
@@ -134,6 +136,7 @@ int main(void) {
             // Servo
             case 'B': {
                 G_RCServoAngle = SERVO_HOME;
+                Stepper_Range();
                 break;
             }
             case 'C': {
@@ -170,11 +173,8 @@ int main(void) {
             }
 
 
-                // Ultrasonic
+            // Ultrasonic
             case 'I': {
-                Ultra_StartTrigger();
-                while(!Ultra_EchoRx());
-                USART3_printf("User Input: 5");
                 USART3_printf("\nUltrasonic: %dcm", Ultra_ReadSensor());
                 break;
             }
