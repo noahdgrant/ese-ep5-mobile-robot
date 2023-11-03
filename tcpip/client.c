@@ -170,10 +170,59 @@ int main (int argc, char *argv[]) {
                 }
                 else{
                     angle = (int)(1000 * atan2((double)axes[axis].y, (double)axes[axis].x));
-
-                    if(angle >=-2356 && angle<=-785 && prevAxisState[axis] != 1){
-                        printf("Forward\n"); // max value of 32767
+					/*
+					if(angle >=-392 && angle<=392 && prevAxisState[axis] != 1){
+                        printf("Pan Right\n"); // max value of 32767
+                        strcpy(buffer, "E");
+                        write (client_socket, buffer, strlen (buffer));
+                        prevAxisState[axis] = 1;
+                    }
+                    else if(angle >392 && angle<1178 && prevAxisState[axis] != 2){
+                        printf("Right & Up\n"); // max value of 32767
+                        strcpy(buffer, "DE");
+                        write (client_socket, buffer, strlen (buffer));
+                        prevAxisState[axis] = 2;
+                    }
+                    else if(angle >=1178 && angle<=1963 && prevAxisState[axis] != 3){
+                        printf("Up\n"); // max value of 32767
+                        strcpy(buffer, "D");
+                        write (client_socket, buffer, strlen (buffer));
+                        prevAxisState[axis] = 3;
+                    }
+                    else if(angle >1963 && angle<2748 && prevAxisState[axis] != 4){
+                        printf("Left & Up\n"); // max value of 32767
+                        strcpy(buffer, "FD");
+                        write (client_socket, buffer, strlen (buffer));
+                        prevAxisState[axis] = 4;
+                    }
+                    else if((angle >=2748 || angle<=-2748) && prevAxisState[axis] != 5){
+                        printf("Pan Left\n"); // max value of 32767
+                        strcpy(buffer, "F");
+                        write (client_socket, buffer, strlen (buffer));
+                        prevAxisState[axis] = 5;
+                    }
+                    else if(angle > -2748 && angle < -1963 && prevAxisState[axis] != 6){
+                        printf("Left & Down\n"); // max value of 32767
+                        strcpy(buffer, "FC");
+                        write (client_socket, buffer, strlen (buffer));
+                        prevAxisState[axis] = 6;
+                    }
+                    else if(angle >=-1963 &&angle<=-1178 && prevAxisState[axis] != 7){
+                        printf("Down\n"); // max value of 32767
                         strcpy(buffer, "C");
+                        write (client_socket, buffer, strlen (buffer));
+                        prevAxisState[axis] = 7;
+                    }
+                    else if(angle >-1178 && angle<-392 && prevAxisState[axis] != 8){
+                        printf("Right & Down\n"); // max value of 32767
+                        strcpy(buffer, "CE");
+                        write (client_socket, buffer, strlen (buffer));
+                        prevAxisState[axis] = 8;
+                    }*/
+					//*
+                    if(angle >=-2356 && angle<=-785 && prevAxisState[axis] != 1){
+                        printf("Up\n"); // max value of 32767
+                        strcpy(buffer, "D");
                         write (client_socket, buffer, strlen (buffer));
                         prevAxisState[axis] = 1;
                     }
@@ -184,8 +233,8 @@ int main (int argc, char *argv[]) {
                         prevAxisState[axis] = 2;
                     }
                     else if(angle >=785 && angle<=2356 && prevAxisState[axis] != 3){
-                        printf("Backward\n"); // max value of 32767
-                        strcpy(buffer, "D");
+                        printf("Down\n"); // max value of 32767
+                        strcpy(buffer, "C");
                         write (client_socket, buffer, strlen (buffer));
                         prevAxisState[axis] = 3;
                     }
@@ -194,7 +243,7 @@ int main (int argc, char *argv[]) {
                         strcpy(buffer, "F");
                         write (client_socket, buffer, strlen (buffer));
                         prevAxisState[axis] = 4;
-                    }
+                    }//*/
                 }
             }
             else if(axis == 2) { // right Joystick

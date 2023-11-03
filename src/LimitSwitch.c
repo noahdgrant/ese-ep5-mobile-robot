@@ -6,6 +6,7 @@
 *******************************************************************************/
 
 #include "LimitSwitch.h"
+#include "Utility.h"
 
 /*******************************************************************************
 *						        PUBLIC FUNCTIONS				    		   *
@@ -65,7 +66,7 @@ void LimitSwitch_Init(void){
 * Returns result depending on button status.
 *******************************************************************************/
 uint8_t LimitSwitch_PressCheck(uint8_t direction){
-    if(direction) { // Clockwise, Right
+    if(direction == RIGHT) { // Clockwise, Right
         // Check if ODR of PC6 is set
         if(IS_BIT_SET(GPIOC->IDR, GPIO_IDR_6)){
             // If set, button is not pressed because of ACTIVE-LOW.

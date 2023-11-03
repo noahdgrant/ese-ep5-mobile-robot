@@ -131,10 +131,12 @@ uint8_t Stepper_Range(void) {
     uint8_t rangeCount = 0;
 	
     StepperStep = STEPPER_CW_FULL_STEP;
-    while(StepperStep != 0){
-        Stepper_Step(STEPPER_CW_FULL_STEP);
-		Delay_ms(5);
-    }
+	if(!LimitSwitch_PressCheck(RIGHT)){
+		while(StepperStep != 0){
+			Stepper_Step(STEPPER_CW_FULL_STEP);
+			Delay_ms(5);
+		}
+	}
 
 	StepperStep = STEPPER_CCW_FULL_STEP;
     while(StepperStep != 0){

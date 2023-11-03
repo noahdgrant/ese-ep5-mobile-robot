@@ -38,6 +38,8 @@ int main(void) {
 
     Stepper_Range();
     RCServo_SetAngle(SERVO_HOME);
+	
+	int RCServoModifier = 0;
 
     // Startup menu
 //    USART3_printf("--- Engineering Project 5 Mobile Robot ---\n");
@@ -121,21 +123,25 @@ int main(void) {
                 break;
             }
             case 'C':{  // rjs N
-                RCServoAngle += SERVO_DECREASE;
+				RCServoModifier = 1;
                 break;
             }
             case 'D':{  // rjs S
-                RCServoAngle -= SERVO_INCREASE;
+			RCServoModifier = -1;
                 break;
             }
 
             // Stepper
             case 'E':{  // rjs E
-                StepperStep = STEPPER_CW_FULL_STEP;
+				if(!LimitSwitch_PressCheck(RIGHT)){
+					StepperStep = STEPPER_CW_FULL_STEP;
+				}
                 break;
             }
             case 'F':{  // rjs W
-                StepperStep = STEPPER_CCW_FULL_STEP;
+				if(!LimitSwitch_PressCheck(LEFT)){
+					StepperStep = STEPPER_CCW_FULL_STEP;
+				)
                 break;
             }
             case 'G':{ // rjs _
@@ -158,10 +164,18 @@ int main(void) {
             }
         }
 
+		RCServoAngle+=RCServoModifier;
+		
+		if(RCServoAngle<-45){
+			RCServoAngle = -45;
+		}
+		else if(RCServoAngle>45){
+			RCServoAngle = 45;
+		}
+		
         DCMotor_SetDirs(DCMotorLeftDir, DCMotorRightDir);
         Stepper_Step(StepperStep);
         RCServo_SetAngle(RCServoAngle);
         Delay_ms(5);
     }
 }
-
